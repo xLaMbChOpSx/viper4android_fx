@@ -118,7 +118,6 @@ public class Utils
     	boolean bExist = new File(filename).exists();
     	if (!bExist)
     	{
-    		RootTools.useRoot = true;
     		bExist = RootTools.exists(filename);
     	}
         return bExist;
@@ -540,8 +539,6 @@ public class Utils
     public static void UninstallDrv_FX()
     {
     	// Lets acquire root first :)
-    	RootTools.useRoot = true;
-    	if (!RootTools.isRootAvailable()) return;
     	if (!RootTools.isAccessGiven()) return;
     	// When done, a root shell was opened
 
@@ -549,7 +546,6 @@ public class Utils
     	String szDriverPathName = "/system/lib/soundfx/libv4a_fx_gb.so";
     	try
     	{
-    		RootTools.useRoot = true;
     		if (RootTools.exists(szDriverPathName))
     		{
     			RootTools.remount("/system", "RW");
@@ -559,7 +555,7 @@ public class Utils
     		    		"rm " + szDriverPathName,
     		    		"toolbox rm " + szDriverPathName,
     		    		"busybox rm " + szDriverPathName);
-    		    RootTools.getShell(true).add(ccRemove).waitForFinish();
+    		    RootTools.getShell(true).add(ccRemove);
     		    RootTools.remount("/system", "RO");
     			// Close all shells
     			RootTools.closeAllShells();
@@ -579,7 +575,6 @@ public class Utils
     		return false;
 
     	// Lets acquire root first :)
-    	RootTools.useRoot = true;
     	if (!RootTools.isRootAvailable()) return false;
     	if (!RootTools.isAccessGiven()) return false;
     	// When done, a root shell was opened
@@ -611,7 +606,7 @@ public class Utils
 	    	if (bOperationSucceed) bOperationSucceed &= RootTools.copyFile(szBaseDrvPathName, "/system/lib/soundfx/libv4a_fx_gb.so", false, false);
 	    	// Modify permission
 		    CommandCapture ccSetPermission = new CommandCapture(0, szChmod + " 644 /system/lib/soundfx/libv4a_fx_gb.so");
-		    RootTools.getShell(true).add(ccSetPermission).waitForFinish();
+		    RootTools.getShell(true).add(ccSetPermission);
 	    	RootTools.remount("/system", "RO");
     	}
     	catch (Exception e)
