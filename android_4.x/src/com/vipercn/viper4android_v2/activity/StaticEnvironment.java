@@ -158,7 +158,6 @@ public class StaticEnvironment
     	// Try roottools
     	Log.i("ViPER4Android", "Now install vbox with roottools");
     	{
-    		RootTools.useRoot = true;
     		RootTools.debugMode = true;
 
     		if (!RootTools.isRootAvailable()) return false;
@@ -177,8 +176,7 @@ public class StaticEnvironment
     				"toolbox chmod 777 /data/vbox",
     				"busybox chmod 777 /data/vbox",
     				"chmod 777 /data/vbox");
-    		try { RootTools.getShell(true).add(ccSetPermission).waitForFinish(); }
-    		catch (InterruptedException e) { bError = true; }
+    		try { RootTools.getShell(true).add(ccSetPermission); }
     		catch (IOException e) { bError = true; }
     		catch (TimeoutException e) { bError = true; }
     		catch (RootDeniedException e) { bError = true; }
