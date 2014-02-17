@@ -33,19 +33,16 @@ import com.vipercn.viper4android_v2.cmdprocessor.CMDProcessor;
 import com.vipercn.viper4android_v2.cmdprocessor.Helpers;
 import com.vipercn.viper4android_v2.service.ViPER4AndroidService;
 
-public class Utils
-{
-    public class AudioEffectUtils
-    {
+public class Utils {
+    public class AudioEffectUtils {
         private AudioEffect.Descriptor[] mAudioEffectList = null;
         private boolean mHasViPER4AndroidEngine = false;
         private int[] mV4AEngineVersion = new int[4];
 
-        public AudioEffectUtils()
-        {
-            try { mAudioEffectList = AudioEffect.queryEffects(); }
-            catch (Exception e)
-            {
+        public AudioEffectUtils() {
+            try {
+                mAudioEffectList = AudioEffect.queryEffects();
+            } catch (Exception e) {
                 mAudioEffectList = null;
                 mHasViPER4AndroidEngine = false;
                 mV4AEngineVersion[0] = 0;
@@ -55,8 +52,7 @@ public class Utils
                 Log.e("ViPER4Android_Utils", "Failed to query audio effects");
                 return;
             }
-            if (mAudioEffectList == null)
-            {
+            if (mAudioEffectList == null) {
                 mHasViPER4AndroidEngine = false;
                 mV4AEngineVersion[0] = 0;
                 mV4AEngineVersion[1] = 0;
@@ -68,24 +64,21 @@ public class Utils
 
             AudioEffect.Descriptor aeViPER4AndroidEngine = null;
             Log.i("ViPER4Android_Utils", "Found " + mAudioEffectList.length + " effects");
-            for (int i = 0; i < mAudioEffectList.length; i++)
-            {
+            for (int i = 0; i < mAudioEffectList.length; i++) {
                 if (mAudioEffectList[i] == null) continue;
-                try
-                {
+                try {
                     AudioEffect.Descriptor aeEffect = mAudioEffectList[i];
                     Log.i("ViPER4Android_Utils", "[" + (i + 1) + "], " + aeEffect.name + ", " + aeEffect.implementor);
-                    if (aeEffect.uuid.equals(ViPER4AndroidService.ID_V4A_GENERAL_FX))
-                    {
+                    if (aeEffect.uuid.equals(ViPER4AndroidService.ID_V4A_GENERAL_FX)) {
                         Log.i("ViPER4Android_Utils", "Perfect, found ViPER4Android engine at " + (i + 1));
                         aeViPER4AndroidEngine = aeEffect;
                     }
+                } catch (Exception e) {
+                    continue;
                 }
-                catch (Exception e) { continue; }
             }
 
-            if (aeViPER4AndroidEngine == null)
-            {
+            if (aeViPER4AndroidEngine == null) {
                 Log.i("ViPER4Android_Utils", "ViPER4Android engine not found");
                 mHasViPER4AndroidEngine = false;
                 mV4AEngineVersion[0] = 0;
@@ -96,21 +89,17 @@ public class Utils
             }
 
             // Extract engine version
-            try
-            {
+            try {
                 String szV4AVersionLine = aeViPER4AndroidEngine.name;
-                if (szV4AVersionLine.contains("[") && szV4AVersionLine.contains("]"))
-                {
-                    if (szV4AVersionLine.length() >= 23)
-                    {
+                if (szV4AVersionLine.contains("[") && szV4AVersionLine.contains("]")) {
+                    if (szV4AVersionLine.length() >= 23) {
                         // szV4AVersionLine should be "ViPER4Android [A.B.C.D]"
                         szV4AVersionLine = szV4AVersionLine.substring(15);
                         while (szV4AVersionLine.endsWith("]"))
                             szV4AVersionLine = szV4AVersionLine.substring(0, szV4AVersionLine.length() - 1);
                         // szV4AVersionLine should be "A.B.C.D"
-                        String [] szVerBlocks = szV4AVersionLine.split("\\.");
-                        if (szVerBlocks.length == 4)
-                        {
+                        String[] szVerBlocks = szV4AVersionLine.split("\\.");
+                        if (szVerBlocks.length == 4) {
                             mV4AEngineVersion[0] = Integer.parseInt(szVerBlocks[0]);
                             mV4AEngineVersion[1] = Integer.parseInt(szVerBlocks[1]);
                             mV4AEngineVersion[2] = Integer.parseInt(szVerBlocks[2]);
@@ -125,8 +114,8 @@ public class Utils
                         return;
                     }
                 }
+            } catch (Exception e) {
             }
-            catch (Exception e) {}
 
             Log.e("ViPER4Android_Utils", "Cannot extract ViPER4Android engine version");
             mHasViPER4AndroidEngine = false;
@@ -136,30 +125,25 @@ public class Utils
             mV4AEngineVersion[3] = 0;
         }
 
-        public AudioEffect.Descriptor[] GetAudioEffectList()
-        {
+        public AudioEffect.Descriptor[] GetAudioEffectList() {
             return mAudioEffectList;
         }
 
-        public boolean IsViPER4AndroidEngineFound()
-        {
+        public boolean IsViPER4AndroidEngineFound() {
             return mHasViPER4AndroidEngine;
         }
 
-        public int[] GetViPER4AndroidEngineVersion()
-        {
+        public int[] GetViPER4AndroidEngineVersion() {
             return mV4AEngineVersion;
         }
     }
 
-    public static class CPUInfo
-    {
+    public static class CPUInfo {
         private boolean m_bCPUHasNEON = false;
         private boolean m_bCPUHasVFP = false;
 
         // Lets read /proc/cpuinfo in java
-        private boolean ReadCPUInfo()
-        {
+        private boolean ReadCPUInfo() {
             String szCPUInfoFile = "/proc/cpuinfo";
             FileReader frCPUInfoReader = null;
             BufferedReader brReader = null;
@@ -168,24 +152,19 @@ public class Utils
             m_bCPUHasVFP = false;
 
             // Find "Features" line, extract neon and vfp
-            try
-            {
+            try {
                 frCPUInfoReader = new FileReader(szCPUInfoFile);
                 brReader = new BufferedReader(frCPUInfoReader);
-                while (true)
-                {
+                while (true) {
                     String szLine = brReader.readLine();
                     if (szLine == null) break;
                     szLine = szLine.trim();
-                    if (szLine.startsWith("Features"))
-                    {
+                    if (szLine.startsWith("Features")) {
                         Log.i("ViPER4Android_Utils", "CPUInfo[java] = <" + szLine + ">");
                         StringTokenizer stBlock = new StringTokenizer(szLine);
-                        while (stBlock.hasMoreElements())
-                        {
+                        while (stBlock.hasMoreElements()) {
                             String szFeature = stBlock.nextToken();
-                            if (szFeature != null)
-                            {
+                            if (szFeature != null) {
                                 if (szFeature.equalsIgnoreCase("neon")) m_bCPUHasNEON = true;
                                 else if (szFeature.equalsIgnoreCase("vfp")) m_bCPUHasVFP = true;
                             }
@@ -197,55 +176,48 @@ public class Utils
 
                 Log.i("ViPER4Android_Utils", "CPUInfo[java] = NEON:" + m_bCPUHasNEON + ", VFP:" + m_bCPUHasVFP);
                 return !(!m_bCPUHasNEON && !m_bCPUHasVFP);
-            }
-            catch (IOException e)
-            {
-                try
-                {
+            } catch (IOException e) {
+                try {
                     if (brReader != null) brReader.close();
                     if (frCPUInfoReader != null) frCPUInfoReader.close();
                     return false;
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     return false;
                 }
             }
         }
 
         // Lets read /proc/cpuinfo in jni
-        private void ReadCPUInfoJni()
-        {
+        private void ReadCPUInfoJni() {
             m_bCPUHasNEON = V4AJniInterface.IsCPUSupportNEON();
             m_bCPUHasVFP = V4AJniInterface.IsCPUSupportVFP();
         }
 
         // Buffered result
-        public CPUInfo()
-        {
+        public CPUInfo() {
             m_bCPUHasNEON = false;
             m_bCPUHasVFP = false;
             if (!ReadCPUInfo())
                 ReadCPUInfoJni();
         }
 
-        public boolean HasNEON() { return m_bCPUHasNEON; }
-        public boolean HasVFP() { return m_bCPUHasVFP; }
+        public boolean HasNEON() {
+            return m_bCPUHasNEON;
+        }
+
+        public boolean HasVFP() {
+            return m_bCPUHasVFP;
+        }
     }
 
     // Check if the specified file exists.
-    public static boolean FileExists(String szFileName)
-    {
+    public static boolean FileExists(String szFileName) {
         boolean bExist = new File(szFileName).exists();
-        if (!bExist)
-        {
-            if (!StaticEnvironment.GetVBoXUsable())
-            {
+        if (!bExist) {
+            if (!StaticEnvironment.GetVBoXUsable()) {
                 RootTools.debugMode = true;
                 bExist = RootTools.exists(szFileName);
-            }
-            else
-            {
+            } else {
                 String VBoX = StaticEnvironment.GetVBoXExecutablePath();
                 if (ShellCommand.ExecuteWithoutShell(VBoX + " exists " + szFileName, null) == 0)
                     bExist = true;
@@ -255,23 +227,17 @@ public class Utils
     }
 
     // Get a file length
-    public static long GetFileLength(String szFileName)
-    {
-        try
-        {
+    public static long GetFileLength(String szFileName) {
+        try {
             return new File(szFileName).length();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return 0;
         }
     }
 
     // Download a file from internet
-    public static boolean DownloadFile(String szURL, String szFileName, String szStorePath)
-    {
-        try
-        {
+    public static boolean DownloadFile(String szURL, String szFileName, String szStorePath) {
+        try {
             URL myURL = new URL(szURL);
             URLConnection conn = myURL.openConnection();
             conn.connect();
@@ -281,8 +247,7 @@ public class Utils
             FileOutputStream fos = new FileOutputStream(szStorePath + szFileName);
 
             byte buf[] = new byte[1024];
-            do
-            {
+            do {
                 int numread = is.read(buf);
                 if (numread == -1) break;
                 fos.write(buf, 0, numread);
@@ -290,50 +255,39 @@ public class Utils
             is.close();
 
             return true;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
     }
 
     // Check a file with checksum
-    public static boolean FileChecksum(String szFilePathName, String szChecksum)
-    {
+    public static boolean FileChecksum(String szFilePathName, String szChecksum) {
         long lChecksum = 0;
 
-        try
-        {
+        try {
             FileInputStream fis = new FileInputStream(szFilePathName);
             byte buf[] = new byte[1024];
-            do
-            {
+            do {
                 int numread = fis.read(buf);
                 if (numread == -1) break;
                 for (int idx = 0; idx < numread; idx++)
-                    lChecksum = lChecksum + (long)(buf[idx]);
+                    lChecksum = lChecksum + (long) (buf[idx]);
             } while (true);
             fis.close();
             String szNewChecksum = Long.toString(lChecksum);
             return szChecksum.equals(szNewChecksum);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
     }
 
     // Read file list from path
-    public static void GetFileNameList(File path, String fileExt, ArrayList<String> fileList)
-    {
-        if (path.isDirectory())
-        {
+    public static void GetFileNameList(File path, String fileExt, ArrayList<String> fileList) {
+        if (path.isDirectory()) {
             File[] files = path.listFiles();
             if (null == files) return;
             for (File file : files) GetFileNameList(file, fileExt, fileList);
-        }
-        else
-        {
+        } else {
             String filePath = path.getAbsolutePath();
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
             if (fileName.toLowerCase(Locale.US).endsWith(fileExt))
@@ -342,24 +296,20 @@ public class Utils
     }
 
     // Get profile name from a file
-    public static String GetProfileName(String szProfileFileName)
-    {
-        try
-        {
+    public static String GetProfileName(String szProfileFileName) {
+        try {
             FileInputStream fisInput = new FileInputStream(szProfileFileName);
             InputStreamReader isrInput = new InputStreamReader(fisInput, "UTF-8");
             BufferedReader brInput = new BufferedReader(isrInput);
             String szProfileName = "";
-            while (true)
-            {
+            while (true) {
                 String szLine = brInput.readLine();
                 if (szLine == null) break;
                 if (szLine.startsWith("#")) continue;
 
                 String szChunks[] = szLine.split("=");
                 if (szChunks.length != 2) continue;
-                if (szChunks[0].trim().equalsIgnoreCase("profile_name"))
-                {
+                if (szChunks[0].trim().equalsIgnoreCase("profile_name")) {
                     szProfileName = szChunks[1];
                     break;
                 }
@@ -369,18 +319,14 @@ public class Utils
             fisInput.close();
 
             return szProfileName;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return "";
         }
     }
 
     // Get profile name list
-    public static ArrayList<String> GetProfileList(String szProfileDir)
-    {
-        try
-        {
+    public static ArrayList<String> GetProfileList(String szProfileDir) {
+        try {
             File fProfileDirHandle = new File(szProfileDir);
             ArrayList<String> szProfileList = new ArrayList<String>();
             GetFileNameList(fProfileDirHandle, ".prf", szProfileList);
@@ -393,18 +339,14 @@ public class Utils
             }
 
             return szProfileNameList;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return new ArrayList<String>();
         }
     }
 
     // Check whether profile has been exists
-    public static boolean CheckProfileExists(String szProfileName, String szProfileDir)
-    {
-        try
-        {
+    public static boolean CheckProfileExists(String szProfileName, String szProfileDir) {
+        try {
             File fProfileDirHandle = new File(szProfileDir);
             ArrayList<String> szProfileList = new ArrayList<String>();
             GetFileNameList(fProfileDirHandle, ".prf", szProfileList);
@@ -420,28 +362,22 @@ public class Utils
             }
 
             return bFoundProfile;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
     }
 
     // Load profile from file
-    public static boolean LoadProfile(String szProfileName, String szProfileDir, String szPreferenceName, Context ctx)
-    {
-        try
-        {
+    public static boolean LoadProfile(String szProfileName, String szProfileDir, String szPreferenceName, Context ctx) {
+        try {
             File fProfileDirHandle = new File(szProfileDir);
             ArrayList<String> szProfileFileList = new ArrayList<String>();
             GetFileNameList(fProfileDirHandle, ".prf", szProfileFileList);
             String szProfileFileName = "";
-            for (int idx = 0; idx < szProfileFileList.size(); idx++)
-            {
+            for (int idx = 0; idx < szProfileFileList.size(); idx++) {
                 String szFileName = szProfileDir + szProfileFileList.get(idx);
                 String szName = GetProfileName(szFileName);
-                if (szProfileName.trim().equalsIgnoreCase(szName.trim()))
-                {
+                if (szProfileName.trim().equalsIgnoreCase(szName.trim())) {
                     szProfileFileName = szFileName;
                     break;
                 }
@@ -449,33 +385,27 @@ public class Utils
             if (szProfileFileName.equals("")) return false;
 
             SharedPreferences preferences = ctx.getSharedPreferences(szPreferenceName, Context.MODE_PRIVATE);
-            if (preferences != null)
-            {
+            if (preferences != null) {
                 FileInputStream fisInput = new FileInputStream(szProfileFileName);
                 InputStreamReader isrInput = new InputStreamReader(fisInput, "UTF-8");
                 BufferedReader brInput = new BufferedReader(isrInput);
                 Editor e = preferences.edit();
-                while (true)
-                {
+                while (true) {
                     String szLine = brInput.readLine();
                     if (szLine == null) break;
                     if (szLine.startsWith("#")) continue;
 
                     String szChunks[] = szLine.split("=");
                     if (szChunks.length != 3) continue;
-                    if (szChunks[1].trim().equalsIgnoreCase("boolean"))
-                    {
+                    if (szChunks[1].trim().equalsIgnoreCase("boolean")) {
                         String szParameter = szChunks[0];
                         boolean bValue = Boolean.valueOf(szChunks[2]);
                         e.putBoolean(szParameter, bValue);
-                    }
-                    else if (szChunks[1].trim().equalsIgnoreCase("string"))
-                    {
+                    } else if (szChunks[1].trim().equalsIgnoreCase("string")) {
                         String szParameter = szChunks[0];
                         String szValue = szChunks[2];
                         e.putString(szParameter, szValue);
-                    }
-                    else continue;
+                    } else continue;
                 }
                 e.commit();
                 brInput.close();
@@ -483,23 +413,17 @@ public class Utils
                 fisInput.close();
 
                 return true;
-            }
-            else return false;
-        }
-        catch (Exception e)
-        {
+            } else return false;
+        } catch (Exception e) {
             return false;
         }
     }
 
     // Save profile to file
-    public static void SaveProfile(String szProfileName, String szProfileDir, String szPreferenceName, Context ctx)
-    {
-        try
-        {
+    public static void SaveProfile(String szProfileName, String szProfileDir, String szPreferenceName, Context ctx) {
+        try {
             SharedPreferences preferences = ctx.getSharedPreferences(szPreferenceName, Context.MODE_PRIVATE);
-            if (preferences != null)
-            {
+            if (preferences != null) {
                 String szOutFileName = szProfileDir + szProfileName + ".prf";
                 if (FileExists(szOutFileName)) new File(szOutFileName).delete();
 
@@ -611,19 +535,15 @@ public class Utils
                 oswOutput.close();
                 fosOutput.close();
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return;
         }
     }
 
     // Modify audio_effects.conf
-    public static boolean ModifyFXConfig(String szInputFile, String szOutputFile)
-    {
+    public static boolean ModifyFXConfig(String szInputFile, String szOutputFile) {
         Log.i("ViPER4Android_Utils", "Editing audio configuration, input = " + szInputFile + ", output = " + szOutputFile);
-        try
-        {
+        try {
             long lInputFileLength = GetFileLength(szInputFile);
 
             // Create reading and writing stuff
@@ -636,15 +556,13 @@ public class Utils
 
             // Check whether the file has already modified
             boolean bConfigModified = false;
-            brInput.mark((int)lInputFileLength);
-            do
-            {
+            brInput.mark((int) lInputFileLength);
+            do {
                 String szLine = brInput.readLine();
                 if (szLine == null) break;
                 if (szLine.trim().startsWith("#")) continue;
-    			/* This is v4a effect uuid */
-                if (szLine.toLowerCase(Locale.US).contains("41d3c987-e6cf-11e3-a88a-11aba5d5c51b"))
-                {
+                /* This is v4a effect uuid */
+                if (szLine.toLowerCase(Locale.US).contains("41d3c987-e6cf-11e3-a88a-11aba5d5c51b")) {
                     Log.i("ViPER4Android_Utils", "Source file has been modified, line = " + szLine);
                     bConfigModified = true;
                     break;
@@ -653,12 +571,10 @@ public class Utils
 
             boolean bLibraryAppend = false;
             boolean bEffectAppend = false;
-            if (bConfigModified)
-            {
+            if (bConfigModified) {
                 // Already modified, just copy
                 brInput.reset();
-                do
-                {
+                do {
                     String szLine = brInput.readLine();
                     if (szLine == null) break;
                     bwOutput.write(szLine + "\n");
@@ -673,26 +589,20 @@ public class Utils
                 fosOutput.close();
 
                 return true;
-            }
-            else
-            {
+            } else {
                 // Lets append v4a library and effect to configuration
                 brInput.reset();
-                do
-                {
+                do {
                     String szLine = brInput.readLine();
                     if (szLine == null) break;
-                    if (szLine.trim().equalsIgnoreCase("libraries {") && !bLibraryAppend)
-                    {
+                    if (szLine.trim().equalsIgnoreCase("libraries {") && !bLibraryAppend) {
                         // Append library
                         bwOutput.write(szLine + "\n");
                         bwOutput.write("  v4a_fx {\n");
                         bwOutput.write("    path /system/lib/soundfx/libv4a_fx_ics.so\n");
                         bwOutput.write("  }\n");
                         bLibraryAppend = true;
-                    }
-                    else if (szLine.trim().equalsIgnoreCase("effects {") && !bEffectAppend)
-                    {
+                    } else if (szLine.trim().equalsIgnoreCase("effects {") && !bEffectAppend) {
                         // Append effect
                         bwOutput.write(szLine + "\n");
                         bwOutput.write("  v4a_standard_fx {\n");
@@ -700,8 +610,7 @@ public class Utils
                         bwOutput.write("    uuid 41d3c987-e6cf-11e3-a88a-11aba5d5c51b\n");
                         bwOutput.write("  }\n");
                         bEffectAppend = true;
-                    }
-                    else bwOutput.write(szLine + "\n");
+                    } else bwOutput.write(szLine + "\n");
                 } while (true);
                 bwOutput.flush();
 
@@ -715,17 +624,14 @@ public class Utils
                 // Just in case, different config file format in future
                 return bLibraryAppend & bEffectAppend;
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.i("ViPER4Android_Utils", "Error: " + e.getMessage());
             return false;
         }
     }
 
     // Get application data path
-    public static String GetBasePath(Context ctx)
-    {
+    public static String GetBasePath(Context ctx) {
         Context cont = ctx.getApplicationContext();
         String szBasePath = cont.getFilesDir().getAbsolutePath();
         if (!cont.getFilesDir().exists())
@@ -734,16 +640,14 @@ public class Utils
     }
 
     // Check if addon.d folder exists for script installation (Device kernel dependant)
-    public static boolean AddondExists()
-    {
+    public static boolean AddondExists() {
         File f = new File("/system/addon.d/");
 
         return (f.exists() && f.isDirectory());
     }
 
     // Copy assets to local
-    public static boolean CopyAssetsToLocal(Context ctx, String szSourceName, String szDstName)
-    {
+    public static boolean CopyAssetsToLocal(Context ctx, String szSourceName, String szDstName) {
         String szBasePath = GetBasePath(ctx);
         if (szBasePath.equals("")) return false;
         szDstName = szBasePath + "/" + szDstName;
@@ -751,8 +655,7 @@ public class Utils
         InputStream myInput;
         OutputStream myOutput;
         String outFileName = szDstName;
-        try
-        {
+        try {
             File hfOutput = new File(szDstName);
             if (hfOutput.exists()) hfOutput.delete();
 
@@ -765,9 +668,7 @@ public class Utils
             myOutput.flush();
             myInput.close();
             myOutput.close();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.i("ViPER4Android_Utils", "CopyAssetsToLocal() failed, msg = " + e.getMessage());
             return false;
         }
@@ -776,14 +677,12 @@ public class Utils
     }
 
     // Uninstall ViPER4Android FX driver
-    public static void UninstallDrv_FX()
-    {
-    	/* When uninstalling the v4a driver, we just delete the driver file (or just uninstall the apk).
+    public static void UninstallDrv_FX() {
+        /* When uninstalling the v4a driver, we just delete the driver file (or just uninstall the apk).
     	 * Android will check all effect drivers before load, so keep v4a in audio_effects.conf is safe.
     	 */
 
-        if (!StaticEnvironment.GetVBoXUsable())
-        {
+        if (!StaticEnvironment.GetVBoXUsable()) {
             // Lets acquire root first :)
             RootTools.debugMode = true;
             if (!RootTools.isRootAvailable()) return;
@@ -792,29 +691,22 @@ public class Utils
 
             // Then delete the driver
             String szDriverPathName = "/system/lib/soundfx/libv4a_fx_ics.so";
-            try
-            {
+            try {
                 RootTools.debugMode = true;
-                if (RootTools.exists(szDriverPathName))
-                {
+                if (RootTools.exists(szDriverPathName)) {
                     RootTools rtTools = new RootTools();
                     rtTools.deleteFileOrDirectory(szDriverPathName, true);
                     if (RootTools.exists("/system/addon.d/91-v4a.sh"))
                         rtTools.deleteFileOrDirectory("/system/addon.d/91-v4a.sh", true);
                 }
                 RootTools.closeAllShells();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 return;
             }
-        }
-        else
-        {
+        } else {
             String VBoX = StaticEnvironment.GetVBoXExecutablePath();
             String szDriverPathName = "/system/lib/soundfx/libv4a_fx_ics.so";
-            if (ShellCommand.OpenRootShell(true))
-            {
+            if (ShellCommand.OpenRootShell(true)) {
                 ShellCommand.SendShellCommand(VBoX + " mount -o remount,rw /system", 5.0f);
                 Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
                 ShellCommand.SendShellCommand(VBoX + " rm " + szDriverPathName, 1.0f);
@@ -833,22 +725,21 @@ public class Utils
             RootTools.debugMode = true;
             if (!RootTools.isRootAvailable()) return;
             if (!RootTools.isAccessGiven()) return;
-            try
-            {
+            try {
                 RootTools.debugMode = true;
                 RootTools rtTools = new RootTools();
                 rtTools.deleteFileOrDirectory(szDriverPathName, true);
                 if (RootTools.exists("/system/addon.d/91-v4a.sh"))
                     rtTools.deleteFileOrDirectory("/system/addon.d/91-v4a.sh", true);
                 RootTools.closeAllShells();
+            } catch (IOException e) {
+                return;
             }
-            catch (IOException e) { return; }
         }
     }
 
     // Install ViPER4Android FX driver through roottools
-    private static boolean InstallDrv_FX_RootTools(Context ctx, String szDriverName)
-    {
+    private static boolean InstallDrv_FX_RootTools(Context ctx, String szDriverName) {
         boolean bAddondSupported = false;
 
         // Make sure we can use external storage for temp directory
@@ -860,8 +751,7 @@ public class Utils
             return false;
 
         //Check if addon.d directory exists and copy script if supported
-        if (AddondExists())
-        {
+        if (AddondExists()) {
             CopyAssetsToLocal(ctx, "91-v4a.sh", "91-v4a.sh");
             bAddondSupported = true;
         }
@@ -875,12 +765,10 @@ public class Utils
         String szChmod = "";
         if (RootTools.checkUtil("chmod"))
             szChmod = "chmod";
-        else
-        {
+        else {
             if (RootTools.checkUtil("busybox") && RootTools.hasUtil("chmod", "busybox"))
                 szChmod = "busybox chmod";
-            else
-            {
+            else {
                 if (RootTools.checkUtil("toolbox") && RootTools.hasUtil("chmod", "toolbox"))
                     szChmod = "toolbox chmod";
             }
@@ -898,14 +786,11 @@ public class Utils
             bExistsVendor = true;
 
         // Copy configuration to temp directory
-        if (bExistsVendor)
-        {
+        if (bExistsVendor) {
     		/* Copy to external storage, we dont need remount */
             RootTools.copyFile("/system/etc/audio_effects.conf", szSystemConf, false, false);
             RootTools.copyFile("/system/vendor/etc/audio_effects.conf", szVendorConf, false, false);
-        }
-        else
-        {
+        } else {
     		/* Copy to external storage, we dont need remount */
             RootTools.copyFile("/system/etc/audio_effects.conf", szSystemConf, false, false);
         }
@@ -914,30 +799,26 @@ public class Utils
         boolean bModifyResult;
         bModifyResult = ModifyFXConfig(szSystemConf, szSystemConf + ".out");
         if (bExistsVendor) bModifyResult &= ModifyFXConfig(szVendorConf, szVendorConf + ".out");
-        if (!bModifyResult)
-        {
+        if (!bModifyResult) {
     		/* Modify the configuration failed, lets cleanup temp file(s) */
-            try
-            {
+            try {
                 RootTools rtTools = new RootTools();
-                if (bExistsVendor)
-                {
+                if (bExistsVendor) {
                     if (!rtTools.deleteFileOrDirectory(szSystemConf, false)) new File(szSystemConf).delete();
                     if (!rtTools.deleteFileOrDirectory(szVendorConf, false)) new File(szVendorConf).delete();
-                    if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false)) new File(szSystemConf + ".out").delete();
-                    if (!rtTools.deleteFileOrDirectory(szVendorConf + ".out", false)) new File(szVendorConf + ".out").delete();
-                }
-                else
-                {
+                    if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false))
+                        new File(szSystemConf + ".out").delete();
+                    if (!rtTools.deleteFileOrDirectory(szVendorConf + ".out", false))
+                        new File(szVendorConf + ".out").delete();
+                } else {
                     if (!rtTools.deleteFileOrDirectory(szSystemConf, false)) new File(szSystemConf).delete();
-                    if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false)) new File(szSystemConf + ".out").delete();
+                    if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false))
+                        new File(szSystemConf + ".out").delete();
                 }
                 // Close all shells
                 RootTools.closeAllShells();
                 return false;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 return false;
             }
         }
@@ -946,26 +827,25 @@ public class Utils
         boolean bOperationSucceed;
         String szBaseDrvPathName = GetBasePath(ctx);
         String szAddondScriptPathName = szBaseDrvPathName;
-        if (szBaseDrvPathName.endsWith("/"))
-        {
+        if (szBaseDrvPathName.endsWith("/")) {
             szBaseDrvPathName = szBaseDrvPathName + "libv4a_fx_ics.so";
             if (bAddondSupported) szAddondScriptPathName = szAddondScriptPathName + "91-v4a.sh";
-        }
-        else
-        {
+        } else {
             szBaseDrvPathName = szBaseDrvPathName + "/libv4a_fx_ics.so";
             if (bAddondSupported) szAddondScriptPathName = szAddondScriptPathName + "/91-v4a.sh";
         }
-        try
-        {
-            if (bExistsVendor)
-            {
+        try {
+            if (bExistsVendor) {
                 // Copy files
                 bOperationSucceed = RootTools.remount("/system", "RW");
-                if (bOperationSucceed) bOperationSucceed = RootTools.copyFile(szBaseDrvPathName, "/system/lib/soundfx/libv4a_fx_ics.so", false, false);
-                if (bOperationSucceed) bOperationSucceed = RootTools.copyFile(szSystemConf + ".out", "/system/etc/audio_effects.conf", false, false);
-                if (bOperationSucceed) bOperationSucceed = RootTools.copyFile(szVendorConf + ".out", "/system/vendor/etc/audio_effects.conf", false, false);
-                if (bOperationSucceed && bAddondSupported) bOperationSucceed = RootTools.copyFile(szAddondScriptPathName, "/system/addon.d/91-v4a.sh", false, false);
+                if (bOperationSucceed)
+                    bOperationSucceed = RootTools.copyFile(szBaseDrvPathName, "/system/lib/soundfx/libv4a_fx_ics.so", false, false);
+                if (bOperationSucceed)
+                    bOperationSucceed = RootTools.copyFile(szSystemConf + ".out", "/system/etc/audio_effects.conf", false, false);
+                if (bOperationSucceed)
+                    bOperationSucceed = RootTools.copyFile(szVendorConf + ".out", "/system/vendor/etc/audio_effects.conf", false, false);
+                if (bOperationSucceed && bAddondSupported)
+                    bOperationSucceed = RootTools.copyFile(szAddondScriptPathName, "/system/addon.d/91-v4a.sh", false, false);
                 // Modify permission
                 CommandCapture ccSetPermission = new CommandCapture(0,
                         szChmod + " 644 /system/etc/audio_effects.conf",
@@ -974,22 +854,22 @@ public class Utils
                 RootTools.getShell(true).add(ccSetPermission);
 
                 // Modify permission of addon.d script if applicable
-                if (bAddondSupported)
-                {
+                if (bAddondSupported) {
                     CommandCapture ccSetAddondPermission = new CommandCapture(0,
                             szChmod + " 755 /system/addon.d/91-v4a.sh");
                     RootTools.getShell(true).add(ccSetAddondPermission);
                 }
 
                 RootTools.remount("/system", "RO");
-            }
-            else
-            {
+            } else {
                 // Copy files
                 bOperationSucceed = RootTools.remount("/system", "RW");
-                if (bOperationSucceed) bOperationSucceed = RootTools.copyFile(szBaseDrvPathName, "/system/lib/soundfx/libv4a_fx_ics.so", false, false);
-                if (bOperationSucceed) bOperationSucceed = RootTools.copyFile(szSystemConf + ".out", "/system/etc/audio_effects.conf", false, false);
-                if (bOperationSucceed && bAddondSupported) bOperationSucceed = RootTools.copyFile(szAddondScriptPathName, "/system/addon.d/91-v4a.sh", false, false);
+                if (bOperationSucceed)
+                    bOperationSucceed = RootTools.copyFile(szBaseDrvPathName, "/system/lib/soundfx/libv4a_fx_ics.so", false, false);
+                if (bOperationSucceed)
+                    bOperationSucceed = RootTools.copyFile(szSystemConf + ".out", "/system/etc/audio_effects.conf", false, false);
+                if (bOperationSucceed && bAddondSupported)
+                    bOperationSucceed = RootTools.copyFile(szAddondScriptPathName, "/system/addon.d/91-v4a.sh", false, false);
 
                 // Modify permission
                 CommandCapture ccSetPermission = new CommandCapture(0,
@@ -998,8 +878,7 @@ public class Utils
                 RootTools.getShell(true).add(ccSetPermission);
 
                 // Modify permission of addon.d script if applicable
-                if (bAddondSupported)
-                {
+                if (bAddondSupported) {
                     CommandCapture ccSetAddondPermission = new CommandCapture(0,
                             szChmod + " 755 /system/addon.d/91-v4a.sh");
                     RootTools.getShell(true).add(ccSetAddondPermission);
@@ -1007,33 +886,28 @@ public class Utils
 
                 RootTools.remount("/system", "RO");
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             bOperationSucceed = false;
         }
 
 		/* Cleanup temp file(s) and close root shell */
-        try
-        {
+        try {
             RootTools rtTools = new RootTools();
-            if (bExistsVendor)
-            {
+            if (bExistsVendor) {
                 if (!rtTools.deleteFileOrDirectory(szSystemConf, false)) new File(szSystemConf).delete();
                 if (!rtTools.deleteFileOrDirectory(szVendorConf, false)) new File(szVendorConf).delete();
-                if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false)) new File(szSystemConf + ".out").delete();
-                if (!rtTools.deleteFileOrDirectory(szVendorConf + ".out", false)) new File(szVendorConf + ".out").delete();
-            }
-            else
-            {
+                if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false))
+                    new File(szSystemConf + ".out").delete();
+                if (!rtTools.deleteFileOrDirectory(szVendorConf + ".out", false))
+                    new File(szVendorConf + ".out").delete();
+            } else {
                 if (!rtTools.deleteFileOrDirectory(szSystemConf, false)) new File(szSystemConf).delete();
-                if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false)) new File(szSystemConf + ".out").delete();
+                if (!rtTools.deleteFileOrDirectory(szSystemConf + ".out", false))
+                    new File(szSystemConf + ".out").delete();
             }
             // Close all shells
             RootTools.closeAllShells();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return false;
         }
 
@@ -1041,8 +915,7 @@ public class Utils
     }
 
     // Install ViPER4Android FX driver through vbox
-    private static boolean InstallDrv_FX_VBoX(Context ctx, String szDriverName)
-    {
+    private static boolean InstallDrv_FX_VBoX(Context ctx, String szDriverName) {
         boolean bAddondSupported = false, bUsingSuperSU = false;
 
         // Make sure we can use external storage for temp directory
@@ -1054,8 +927,7 @@ public class Utils
             return false;
 
         //Check if addon.d directory exists and copy script if supported
-        if (AddondExists())
-        {
+        if (AddondExists()) {
             CopyAssetsToLocal(ctx, "91-v4a.sh", "91-v4a.sh");
             bAddondSupported = true;
         }
@@ -1075,16 +947,13 @@ public class Utils
             bExistsVendor = true;
 
         // Copy configuration to temp directory
-        if (bExistsVendor)
-        {
+        if (bExistsVendor) {
     		/* Copy to external storage */
             ShellCommand.SendShellCommand(VBoX + " cp /system/etc/audio_effects.conf " + szSystemConf, 1.0f);
             Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
             ShellCommand.SendShellCommand(VBoX + " cp /system/vendor/etc/audio_effects.conf " + szVendorConf, 1.0f);
             Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
-        }
-        else
-        {
+        } else {
     		/* Copy to external storage */
             ShellCommand.SendShellCommand(VBoX + " cp /system/etc/audio_effects.conf " + szSystemConf, 1.0f);
             Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
@@ -1094,18 +963,14 @@ public class Utils
         boolean bModifyResult = true;
         bModifyResult = ModifyFXConfig(szSystemConf, szSystemConf + ".out");
         if (bExistsVendor) bModifyResult &= ModifyFXConfig(szVendorConf, szVendorConf + ".out");
-        if (!bModifyResult)
-        {
+        if (!bModifyResult) {
     		/* Modify the configuration failed, lets cleanup temp file(s) */
-            if (bExistsVendor)
-            {
+            if (bExistsVendor) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
                 new File(szVendorConf + ".out").delete();
-            }
-            else
-            {
+            } else {
                 new File(szSystemConf).delete();
                 new File(szSystemConf + ".out").delete();
             }
@@ -1117,35 +982,29 @@ public class Utils
         // Copy back to system
         String szBaseDrvPathName = GetBasePath(ctx);
         String szAddondScriptPathName = szBaseDrvPathName;
-        if (szBaseDrvPathName.endsWith("/"))
-        {
+        if (szBaseDrvPathName.endsWith("/")) {
             szBaseDrvPathName = szBaseDrvPathName + "libv4a_fx_ics.so";
             if (bAddondSupported) szAddondScriptPathName = szAddondScriptPathName + "91-v4a.sh";
-        }
-        else
-        {
+        } else {
             szBaseDrvPathName = szBaseDrvPathName + "/libv4a_fx_ics.so";
             if (bAddondSupported) szAddondScriptPathName = szAddondScriptPathName + "/91-v4a.sh";
         }
-        int nShellCmdReturn; boolean bSuccess = false;
+        int nShellCmdReturn;
+        boolean bSuccess = false;
         bUsingSuperSU = UsingSuperSU(ctx);
-        if (bExistsVendor)
-        {
+        if (bExistsVendor) {
             // Copy files
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " mount -o remount,rw /system", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " mount -o remount,rw /system", 5.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("mount -o rw,remount /system");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1156,29 +1015,24 @@ public class Utils
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                ShellCommand.SendShellCommand(VBoX + " rm /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            if (bUsingSuperSU) {
+                ShellCommand.SendShellCommand(VBoX + " rm /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
                 Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
-            }
-            else
-            {
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("rm /system/lib/soundfx/libv4a_fx_ics.so");
                 Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so");
                 bSuccess = (nShellCmdReturn == 0);
             }
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1188,39 +1042,32 @@ public class Utils
                 return false;
             }
 
-            if (bAddondSupported)
-            {
+            if (bAddondSupported) {
                 //Determine command structure based on SuperUser or SuperSU use
-                if (bUsingSuperSU)
-                {
-                    bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-                }
-                else
-                {
+                if (bUsingSuperSU) {
+                    bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh", 1.0f);
+                    nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                } else {
                     nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh");
                     bSuccess = (nShellCmdReturn == 0);
                 }
 
-                if (!bSuccess || (nShellCmdReturn != 0))
-                {
+                if (!bSuccess || (nShellCmdReturn != 0)) {
                     Log.e("ViPER4Android", "Cannot copy addon.d script to /system/addon.d/");
                     // NO RETURN FALSE OR CLOSESHELL - addon.d script failure should not stop v4a from installing
                 }
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1231,18 +1078,15 @@ public class Utils
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szVendorConf + ".out" + " /system/vendor/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szVendorConf + ".out" + " /system/vendor/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szVendorConf + ".out" + " /system/vendor/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1254,18 +1098,15 @@ public class Utils
             // Modify permission
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1276,17 +1117,14 @@ public class Utils
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/vendor/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/vendor/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/vendor/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1295,39 +1133,32 @@ public class Utils
                 ShellCommand.CloseShell();
                 return false;
             }
-            if (bAddondSupported)
-            {
+            if (bAddondSupported) {
                 //Determine command structure based on SuperUser or SuperSU use
-                if (bUsingSuperSU)
-                {
-                    bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 755 /system/addon.d/91-v4a.sh", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-                }
-                else
-                {
+                if (bUsingSuperSU) {
+                    bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 755 /system/addon.d/91-v4a.sh", 1.0f);
+                    nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                } else {
                     nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 755 /system/addon.d/91-v4a.sh");
                     bSuccess = (nShellCmdReturn == 0);
                 }
 
-                if (!bSuccess || (nShellCmdReturn != 0))
-                {
+                if (!bSuccess || (nShellCmdReturn != 0)) {
                     Log.e("ViPER4Android", "Cannot change addon.d script permission [/system/addon.d]");
                     // NO RETURN FALSE OR CLOSESHELL - addon.d script failure should not stop v4a from installing
                 }
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/lib/soundfx/libv4a_fx_ics.so");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szVendorConf).delete();
                 new File(szSystemConf + ".out").delete();
@@ -1337,37 +1168,31 @@ public class Utils
                 return false;
             }
 
-            ShellCommand.SendShellCommand(VBoX + " sync", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            ShellCommand.SendShellCommand(VBoX + " sync", 5.0f);
+            nShellCmdReturn = ShellCommand.GetLastReturnValue();
             Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                ShellCommand.SendShellCommand(VBoX + " mount -o remount,ro /system", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                ShellCommand.SendShellCommand(VBoX + " mount -o remount,ro /system", 5.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("mount -o ro,remount /system");
             }
             Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
-        }
-        else
-        {
+        } else {
             // Copy files
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " mount -o remount,rw /system", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " mount -o remount,rw /system", 5.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("mount -o rw,remount /system");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szSystemConf + ".out").delete();
                 Log.e("ViPER4Android", "Cannot remount /system");
@@ -1376,68 +1201,56 @@ public class Utils
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                ShellCommand.SendShellCommand(VBoX + " rm /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                ShellCommand.SendShellCommand(VBoX + " rm /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("rm /system/lib/soundfx/libv4a_fx_ics.so");
             }
             Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szSystemConf + ".out").delete();
                 Log.e("ViPER4Android", "Cannot copy V4A driver to /system");
                 ShellCommand.CloseShell();
                 return false;
             }
-            if (bAddondSupported)
-            {
+            if (bAddondSupported) {
                 //Determine command structure based on SuperUser or SuperSU use
-                if (bUsingSuperSU)
-                {
-                    bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-                }
-                else
-                {
+                if (bUsingSuperSU) {
+                    bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh", 1.0f);
+                    nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                } else {
                     nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh");
                     bSuccess = (nShellCmdReturn == 0);
                 }
 
-                if (!bSuccess || (nShellCmdReturn != 0))
-                {
+                if (!bSuccess || (nShellCmdReturn != 0)) {
                     Log.e("ViPER4Android", "Cannot copy addon.d script to /system/addon.d/");
                     // NO RETURN FALSE OR CLOSESHELL - addon.d script failure should not stop v4a from installing
                 }
             }
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
 
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szSystemConf + ".out").delete();
                 Log.e("ViPER4Android", "Cannot copy audio config to /system");
@@ -1448,44 +1261,38 @@ public class Utils
 
 
             //Determine command structure based on SuperUser or SuperSU use
-            if (bUsingSuperSU)
-            {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/etc/audio_effects.conf", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-            }
-            else
-            {
+            if (bUsingSuperSU) {
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/etc/audio_effects.conf", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/etc/audio_effects.conf");
                 bSuccess = (nShellCmdReturn == 0);
             }
-            if (!bSuccess || (nShellCmdReturn != 0))
-            {
+            if (!bSuccess || (nShellCmdReturn != 0)) {
                 new File(szSystemConf).delete();
                 new File(szSystemConf + ".out").delete();
                 Log.e("ViPER4Android", "Cannot change config's permission [/system]");
                 ShellCommand.CloseShell();
                 return false;
             }
-            if (bAddondSupported)
-            {
+            if (bAddondSupported) {
                 //Determine command structure based on SuperUser or SuperSU use
-                if (bUsingSuperSU)
-                {
-                    bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/addon.d/91-v4a.sh", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
-                }
-                else
-                {
+                if (bUsingSuperSU) {
+                    bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/addon.d/91-v4a.sh", 1.0f);
+                    nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                } else {
                     nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/addon.d/91-v4a.sh");
                     bSuccess = (nShellCmdReturn == 0);
                 }
-                if (!bSuccess || (nShellCmdReturn != 0))
-                {
+                if (!bSuccess || (nShellCmdReturn != 0)) {
                     Log.e("ViPER4Android", "Cannot change addon.d script permission [/system/addon.d]");
                     // NO RETURN FALSE OR CLOSESHELL - addon.d script failure should not stop v4a from installing
                 }
             }
             //Determine command structure based on SuperUser or SuperSU use
             if (bUsingSuperSU) {
-                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/lib/soundfx/libv4a_fx_ics.so", 1.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                bSuccess = ShellCommand.SendShellCommand(VBoX + " chmod 644 /system/lib/soundfx/libv4a_fx_ics.so", 1.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
             } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("chmod 644 /system/lib/soundfx/libv4a_fx_ics.so");
                 bSuccess = (nShellCmdReturn == 0);
@@ -1497,11 +1304,13 @@ public class Utils
                 ShellCommand.CloseShell();
                 return false;
             }
-            ShellCommand.SendShellCommand(VBoX + " sync", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
+            ShellCommand.SendShellCommand(VBoX + " sync", 5.0f);
+            nShellCmdReturn = ShellCommand.GetLastReturnValue();
             Log.i("ViPER4Android", "Command return = " + nShellCmdReturn);
             //Determine command structure based on SuperUser or SuperSU use
             if (bUsingSuperSU) {
-                ShellCommand.SendShellCommand(VBoX + " mount -o remount,ro /system", 5.0f); nShellCmdReturn = ShellCommand.GetLastReturnValue();
+                ShellCommand.SendShellCommand(VBoX + " mount -o remount,ro /system", 5.0f);
+                nShellCmdReturn = ShellCommand.GetLastReturnValue();
             } else {
                 nShellCmdReturn = ShellCommand.RootExecuteWithoutShell("mount -o ro,remount /system");
             }
@@ -1525,8 +1334,7 @@ public class Utils
     }
 
     // Check if SuperSU is current root tool installed
-    private static boolean UsingSuperSU(Context ctx)
-    {
+    private static boolean UsingSuperSU(Context ctx) {
         PackageManager pm = ctx.getPackageManager();
         boolean installed = false;
         try {
@@ -1539,21 +1347,18 @@ public class Utils
     }
 
     // Install ViPER4Android FX driver
-    public static boolean InstallDrv_FX(Context ctx, String szDriverName)
-    {
-    	if (StaticEnvironment.GetVBoXUsable())
-    	{
-    		if (InstallDrv_FX_VBoX(ctx, szDriverName))
-    		    return true;
-    	}
+    public static boolean InstallDrv_FX(Context ctx, String szDriverName) {
+        if (StaticEnvironment.GetVBoXUsable()) {
+            if (InstallDrv_FX_VBoX(ctx, szDriverName))
+                return true;
+        }
 
         return InstallDrv_FX_RootTools(ctx, szDriverName)
-            || InstallDrv_FX_CMDProcessor(ctx, szDriverName);
+                || InstallDrv_FX_CMDProcessor(ctx, szDriverName);
     }
 
     // Install ViPER4Android FX driver through CMDProcessor
-    private static boolean InstallDrv_FX_CMDProcessor(Context ctx, String szDriverName)
-    {
+    private static boolean InstallDrv_FX_CMDProcessor(Context ctx, String szDriverName) {
         boolean bAddondSupported = false;
 
         // Make sure we can use external storage for temp directory
@@ -1652,11 +1457,12 @@ public class Utils
                     bOperationSucceed = CMDProcessor.runSuCommand("cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so").success();
                     bOperationSucceed = CMDProcessor.runSuCommand("cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf").success();
                     bOperationSucceed = CMDProcessor.runSuCommand("cp " + szVendorConf + ".out" + " /system/vendor/etc/audio_effects.conf").success();
-                    if (bAddondSupported) bOperationSucceed = CMDProcessor.runSuCommand("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh").success();
+                    if (bAddondSupported)
+                        bOperationSucceed = CMDProcessor.runSuCommand("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh").success();
                     // Modify permission
                     bOperationSucceed = CMDProcessor.runSuCommand(szChmod + " 644 /system/etc/audio_effects.conf" + "\n" +
-                      szChmod + " 644 /system/vendor/etc/audio_effects.conf" + "\n" +
-                      szChmod + " 644 /system/lib/soundfx/libv4a_fx_ics.so").success();
+                            szChmod + " 644 /system/vendor/etc/audio_effects.conf" + "\n" +
+                            szChmod + " 644 /system/lib/soundfx/libv4a_fx_ics.so").success();
                 }
 
                 // Modify permission of addon.d script if applicable
@@ -1675,11 +1481,12 @@ public class Utils
                 while (bOperationSucceed) {
                     bOperationSucceed = CMDProcessor.runSuCommand("cp " + szBaseDrvPathName + " /system/lib/soundfx/libv4a_fx_ics.so").success();
                     bOperationSucceed = CMDProcessor.runSuCommand("cp " + szSystemConf + ".out" + " /system/etc/audio_effects.conf").success();
-                    if (bAddondSupported) bOperationSucceed = CMDProcessor.runSuCommand("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh").success();
+                    if (bAddondSupported)
+                        bOperationSucceed = CMDProcessor.runSuCommand("cp " + szAddondScriptPathName + " /system/addon.d/91-v4a.sh").success();
 
                     // Modify permission
                     bOperationSucceed = CMDProcessor.runSuCommand(szChmod + " 644 /system/etc/audio_effects.conf" + "\n" +
-                      szChmod + " 644 /system/lib/soundfx/libv4a_fx_ics.so").success();
+                            szChmod + " 644 /system/lib/soundfx/libv4a_fx_ics.so").success();
 
                     // Modify permission of addon.d script if applicable
                     if (bAddondSupported) {
