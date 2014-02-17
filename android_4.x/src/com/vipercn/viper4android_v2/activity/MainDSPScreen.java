@@ -14,10 +14,12 @@ import com.vipercn.viper4android_v2.preference.EqualizerPreference;
 import com.vipercn.viper4android_v2.preference.SummariedListPreference;
 
 public final class MainDSPScreen extends PreferenceFragment {
+    private String TAG = "ViPER4Android_" +getClass().getSimpleName();
+
     private final OnSharedPreferenceChangeListener listener = new OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            Log.i("ViPER4Android", "Update key = " + key);
+            Log.i(TAG, "Update key = " + key);
 
             if ("viper4android.headphonefx.fireq".equals(key)) {
                 String newValue = sharedPreferences.getString(key, null);

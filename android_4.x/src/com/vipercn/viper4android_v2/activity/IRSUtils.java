@@ -11,6 +11,8 @@ import java.nio.ByteOrder;
 import android.util.Log;
 
 public class IRSUtils {
+    private String TAG = "ViPER4Android_" + getClass().getSimpleName();
+
     public static long HashIRS(byte[] baArray, int nLength) {
         if (baArray == null) return 0;
         if (baArray.length < nLength) return 0;
@@ -45,7 +47,6 @@ public class IRSUtils {
     private FileInputStream m_fsiIRSStream = null;
     private BufferedInputStream m_bisInputStream = null;
 
-    private long m_nFileLength = 0;
     private long m_nSamplesCount = 0;
     private long m_nBytesCount = 0;
     private int m_nChannels = 0;
@@ -67,6 +68,7 @@ public class IRSUtils {
             try {
                 m_bisInputStream.close();
             } catch (IOException e) {
+                Log.e(TAG, "Release " + e.getMessage());
             }
             m_bisInputStream = null;
         }
@@ -74,6 +76,7 @@ public class IRSUtils {
             try {
                 m_fsiIRSStream.close();
             } catch (IOException e) {
+                Log.e(TAG, "Release " + e.getMessage());
             }
             m_fsiIRSStream = null;
         }
@@ -91,10 +94,10 @@ public class IRSUtils {
         } catch (FileNotFoundException e) {
             m_fsiIRSStream = null;
             m_bisInputStream = null;
-            Log.i("ViPER4Android", "LoadIRS, FileNotFoundException, msg = " + e.getMessage());
+            Log.i(TAG, "LoadIRS, FileNotFoundException, msg = " + e.getMessage());
             return false;
         }
-        m_nFileLength = new File(szIRSPathName).length();
+        long m_nFileLength = new File(szIRSPathName).length();
         if (m_nFileLength <= 16) {
             Release();
             return false;
@@ -148,9 +151,9 @@ public class IRSUtils {
             return false;
         }
         int nByteRate = ReadUnsignedIntLE(m_bisInputStream);
-        Log.i("ViPER4Android", "IRS byterate = " + nByteRate);
+        Log.i(TAG, "IRS byterate = " + nByteRate);
         int nBlockAlign = ReadUnsignedShortLE(m_bisInputStream);
-        Log.i("ViPER4Android", "IRS blockalign = " + nBlockAlign);
+        Log.i(TAG, "IRS blockalign = " + nBlockAlign);
         m_nSampleBits = ReadUnsignedShortLE(m_bisInputStream);
         // Calculate sample type
         {
@@ -203,8 +206,8 @@ public class IRSUtils {
             }
         }
 
-        Log.i("ViPER4Android", "IRS [" + szIRSPathName + "] opened");
-        Log.i("ViPER4Android", "IRS attr = [" + m_nSampleType + "," + m_nChannels + "," + m_nSamplesCount + "]");
+        Log.i(TAG, "IRS [" + szIRSPathName + "] opened");
+        Log.i(TAG, "IRS attr = [" + m_nSampleType + "," + m_nChannels + "," + m_nSamplesCount + "]");
 
         return true;
     }
@@ -246,8 +249,8 @@ public class IRSUtils {
             }
         } else if (m_nBytesCount < baData.length) {
             // If we got more data then header described, then use header described
-            Log.i("ViPER4Android", "IRSUtils: We got some garbage data, header = " + m_nBytesCount + ", read = " + baData.length);
-            Log.i("ViPER4Android", "IRSUtils: So lets discard some data, length = " + (baData.length - m_nBytesCount));
+            Log.i(TAG, "IRSUtils: We got some garbage data, header = " + m_nBytesCount + ", read = " + baData.length);
+            Log.i(TAG, "IRSUtils: So lets discard some data, length = " + (baData.length - m_nBytesCount));
             byte[] baActualData = new byte[(int) m_nBytesCount];
             System.arraycopy(baData, 0, baActualData, 0, (int) m_nBytesCount);
             baData = baActualData;

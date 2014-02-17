@@ -5,16 +5,17 @@ import java.nio.charset.Charset;
 import android.util.Log;
 
 public class V4AJniInterface {
+    private static String TAG = "ViPER4Android_JniInterface";
     private static boolean m_JniLoadOK = false;
 
     static {
         try {
             System.loadLibrary("V4AJniUtils");
             m_JniLoadOK = true;
-            Log.i("ViPER4Android_Utils", "libV4AJniUtils.so loaded");
+            Log.i(TAG, "libV4AJniUtils.so loaded");
         } catch (UnsatisfiedLinkError e) {
             m_JniLoadOK = false;
-            Log.e("ViPER4Android_Utils", "[Fatal] Can't load libV4AJniUtils.so");
+            Log.e(TAG, "[Fatal] Can't load libV4AJniUtils.so");
         }
     }
 
@@ -47,14 +48,14 @@ public class V4AJniInterface {
     public static boolean IsCPUSupportNEON() {
         if (!m_JniLoadOK) return false;
         int nResult = CheckCPUHasNEON();
-        Log.i("ViPER4Android_Utils", "CPUInfo[jni] = NEON:" + nResult);
+        Log.i(TAG, "CPUInfo[jni] = NEON:" + nResult);
         return nResult != 0;
     }
 
     public static boolean IsCPUSupportVFP() {
         if (!m_JniLoadOK) return false;
         int nResult = CheckCPUHasVFP();
-        Log.i("ViPER4Android_Utils", "CPUInfo[jni] = VFP:" + nResult);
+        Log.i(TAG, "CPUInfo[jni] = VFP:" + nResult);
         return nResult != 0;
     }
 

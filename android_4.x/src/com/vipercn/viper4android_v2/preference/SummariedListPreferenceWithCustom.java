@@ -17,6 +17,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class SummariedListPreferenceWithCustom extends ListPreference {
+    private String TAG = "ViPER4Android_" + getClass().getSimpleName();
+
     public SummariedListPreferenceWithCustom(Context context, AttributeSet set) {
         super(context, set);
     }
@@ -25,7 +27,7 @@ public class SummariedListPreferenceWithCustom extends ListPreference {
     protected void onPrepareDialogBuilder(Builder builder) {
         try {
             if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                Log.i("ViPER4Android", "External storage not mounted");
+                Log.i(TAG, "External storage not mounted");
                 setEntries(new String[0]);
                 setEntryValues(new String[0]);
                 String szTip = getContext().getResources().getString(R.string.text_ir_dir_isempty);
@@ -39,10 +41,10 @@ public class SummariedListPreferenceWithCustom extends ListPreference {
             File mKnlFile = new File(szKernelPath);
 
             if (!mKnlFile.exists()) {
-                Log.i("ViPER4Android", "Kernel directory does not exists");
+                Log.i(TAG, "Kernel directory does not exists");
                 mKnlFile.mkdirs();
                 mKnlFile.mkdir();
-            } else Log.i("ViPER4Android", "Kernel directory exists");
+            } else Log.i(TAG, "Kernel directory exists");
 
             ArrayList<String> szKnlList = new ArrayList<String>();
             Utils.GetFileNameList(mKnlFile, ".irs", szKnlList);

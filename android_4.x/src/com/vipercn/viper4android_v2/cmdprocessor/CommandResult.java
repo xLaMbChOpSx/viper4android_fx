@@ -32,7 +32,7 @@ import java.io.IOException;
 
 @SuppressWarnings("AccessOfSystemProperties")
 public class CommandResult implements Parcelable {
-    private final String TAG = getClass().getSimpleName();
+    private final String TAG = "ViPER4Android_" + getClass().getSimpleName();
     private final long mStartTime;
     private final int mExitValue;
     private final String mStdout;

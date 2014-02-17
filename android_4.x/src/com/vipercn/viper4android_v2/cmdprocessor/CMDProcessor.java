@@ -24,7 +24,7 @@ package com.vipercn.viper4android_v2.cmdprocessor;
 import android.util.Log;
 
 public final class CMDProcessor {
-    private static final String TAG = "V4A_CMDProcessor";
+    private static final String TAG = "ViPER4Android_CMDProcessor";
 
     public CMDProcessor() {
 

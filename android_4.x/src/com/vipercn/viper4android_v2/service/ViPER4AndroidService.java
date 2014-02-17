@@ -945,7 +945,7 @@ public class ViPER4AndroidService extends Service {
             Notification v4aNotify = new Notification.Builder(ViPER4AndroidService.this)
                     .setAutoCancel(false)
                     .setOngoing(true)
-                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setDefaults(Notification.DEFAULT_VIBRATE)
                     .setSmallIcon(nIconID)
                     .setTicker(szNotifyText)
                     .setContentTitle(contentTitle)
@@ -1421,7 +1421,7 @@ public class ViPER4AndroidService extends Service {
             } else {
                 if (m3rdEqualizerLevels != null) {
                     for (int i = 0; i < m3rdEqualizerLevels.length; i++)
-                        SetV4AEqualizerBandLevel(i, (int) Math.round(m3rdEqualizerLevels[i] * 100), true, v4aModule);
+                        SetV4AEqualizerBandLevel(i, Math.round(m3rdEqualizerLevels[i] * 100), true, v4aModule);
                 }
                 v4aModule.setParameter(PARAM_HPFX_FIREQ_PROCESS_ENABLED, m3rdEqualizerEnabled ? 1 : 0);
             }

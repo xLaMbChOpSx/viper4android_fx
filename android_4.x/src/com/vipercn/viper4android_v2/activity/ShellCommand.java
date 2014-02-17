@@ -12,6 +12,8 @@ import android.os.SystemClock;
 import android.util.Log;
 
 public class ShellCommand {
+    private static String TAG = "ViPER4Android_ShellCommand";
+
     private static Process m_psShellProcess = null;
     private static DataOutputStream m_doShellStdIn = null;
     private static DataInputStream m_diShellStdOut = null;
@@ -34,7 +36,7 @@ public class ShellCommand {
         if (nDataLength <= 0) return null;
         if (nDataLength > baByteArray.length) return null;
 
-        // Replace all unvisiable chars to '.'
+        // Replace all invisible chars to '.'
         for (int i = 0; i < nDataLength; i++) {
             if ((baByteArray[i] == 0x0D) || (baByteArray[i] == 0x0A)) {
                 baByteArray[i] = 0;
@@ -96,9 +98,9 @@ public class ShellCommand {
                 }
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + ioe.getMessage());
+            Log.e(TAG, "IOException, msg = " + ioe.getMessage());
         }
-        Log.i("ViPER4Android_ShellCommand", "Standard output read " + nDataLength + " bytes");
+        Log.i(TAG, "Standard output read " + nDataLength + " bytes");
 
         return ByteArrayToStringArray(baDataOut, nDataLength);
     }
@@ -131,9 +133,9 @@ public class ShellCommand {
                 }
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + ioe.getMessage());
+            Log.e(TAG, "IOException, msg = " + ioe.getMessage());
         }
-        Log.i("ViPER4Android_ShellCommand", "Standard error read " + nDataLength + " bytes");
+        Log.i(TAG, "Standard error read " + nDataLength + " bytes");
 
         return ByteArrayToStringArray(baDataOut, nDataLength);
     }
@@ -147,10 +149,11 @@ public class ShellCommand {
                         break;
                 }
             } catch (IOException e) {
+                Log.e(TAG, "IOException, msg = " + e.getMessage());
             }
         }
         if (m_diShellStdErr != null) {
-            Log.i("ViPER4Android_ShellCommand", "Flushing standard error ...");
+            Log.i(TAG, "Flushing standard error ...");
             try {
                 while (m_diShellStdErr.available() > 0) {
                     if (m_diShellStdErr.read() == -1)
@@ -162,21 +165,21 @@ public class ShellCommand {
     }
 
     public static boolean OpenSysShell(boolean bReopen) {
-        Log.i("ViPER4Android_ShellCommand", "Open shell, reopen = " + bReopen);
+        Log.i(TAG, "Open shell, reopen = " + bReopen);
 
         if (m_bShellOpened && !bReopen) {
-            Log.i("ViPER4Android_ShellCommand", "Shell already opened");
+            Log.i(TAG, "Shell already opened");
             return true;
         } else if (m_bShellOpened) {
-            Log.i("ViPER4Android_ShellCommand", "Close current shell");
+            Log.i(TAG, "Close current shell");
             CloseShell();
         }
 
         try {
-            Log.i("ViPER4Android_ShellCommand", "Starting system shell");
+            Log.i(TAG, "Starting system shell");
             m_psShellProcess = Runtime.getRuntime().exec("sh");  /* Maybe we should parse init.rc to find out the $PATH */
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "Start system shell failed, msg = " + ioe.getMessage());
+            Log.e(TAG, "Start system shell failed, msg = " + ioe.getMessage());
             m_psShellProcess = null;
             m_doShellStdIn = null;
             m_diShellStdOut = null;
@@ -185,12 +188,12 @@ public class ShellCommand {
             return false;
         }
 
-        Log.i("ViPER4Android_ShellCommand", "Fetching shell stdin, stdout and stderr");
+        Log.i(TAG, "Fetching shell stdin, stdout and stderr");
         m_doShellStdIn = new DataOutputStream(m_psShellProcess.getOutputStream());
         m_diShellStdOut = new DataInputStream(m_psShellProcess.getInputStream());
         m_diShellStdErr = new DataInputStream(m_psShellProcess.getErrorStream());
         try {
-            Log.i("ViPER4Android_ShellCommand", "Performing shell banner and query id, timeout = 20 secs");
+            Log.i(TAG, "Performing shell banner and query id, timeout = 20 secs");
             m_doShellStdIn.writeBytes("echo \"Enter ViPER's System Shell\"\n");
             m_doShellStdIn.writeBytes("id\n");
             m_doShellStdIn.flush();
@@ -203,23 +206,23 @@ public class ShellCommand {
                 if (szStdErr != null) bGotResult = true;
                 if (bGotResult) {
                     if (szStdOut != null)
-                        for (String aSzStdOut : szStdOut) Log.i("ViPER4Android_ShellCommand", "stdout: " + aSzStdOut);
+                        for (String aSzStdOut : szStdOut) Log.i(TAG, "stdout: " + aSzStdOut);
                     if (szStdErr != null)
-                        for (String aSzStdErr : szStdErr) Log.i("ViPER4Android_ShellCommand", "stderr: " + aSzStdErr);
+                        for (String aSzStdErr : szStdErr) Log.i(TAG, "stderr: " + aSzStdErr);
                     break;
                 }
 
                 SystemClock.sleep(100);
-                Log.i("ViPER4Android_ShellCommand", ((nWaitCount + 1) * 100) + " ms waited, still no result");
+                Log.i(TAG, ((nWaitCount + 1) * 100) + " ms waited, still no result");
             }
 
             if (!bGotResult) {
-                Log.i("ViPER4Android_ShellCommand", "Wait system shell timeout");
+                Log.i(TAG, "Wait system shell timeout");
                 CloseShell();
                 return false;
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + ioe.getMessage());
+            Log.e(TAG, "IOException, msg = " + ioe.getMessage());
             CloseShell();
             return false;
         }
@@ -231,21 +234,21 @@ public class ShellCommand {
     }
 
     public static boolean OpenRootShell(boolean bReopen) {
-        Log.i("ViPER4Android_ShellCommand", "Open shell, reopen = " + bReopen);
+        Log.i(TAG, "Open shell, reopen = " + bReopen);
 
         if (m_bShellOpened && !bReopen) {
-            Log.i("ViPER4Android_ShellCommand", "Shell already opened");
+            Log.i(TAG, "Shell already opened");
             return true;
         } else if (m_bShellOpened) {
-            Log.i("ViPER4Android_ShellCommand", "Close current shell");
+            Log.i(TAG, "Close current shell");
             CloseShell();
         }
 
         try {
-            Log.i("ViPER4Android_ShellCommand", "Starting su shell");
+            Log.i(TAG, "Starting su shell");
             m_psShellProcess = Runtime.getRuntime().exec("su");  /* Maybe we should parse init.rc to find out the $PATH */
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "Start su shell failed, msg = " + ioe.getMessage());
+            Log.i(TAG, "Start su shell failed, msg = " + ioe.getMessage());
             m_psShellProcess = null;
             m_doShellStdIn = null;
             m_diShellStdOut = null;
@@ -254,12 +257,12 @@ public class ShellCommand {
             return false;
         }
 
-        Log.i("ViPER4Android_ShellCommand", "Fetching shell stdin, stdout and stderr");
+        Log.i(TAG, "Fetching shell stdin, stdout and stderr");
         m_doShellStdIn = new DataOutputStream(m_psShellProcess.getOutputStream());
         m_diShellStdOut = new DataInputStream(m_psShellProcess.getInputStream());
         m_diShellStdErr = new DataInputStream(m_psShellProcess.getErrorStream());
         try {
-            Log.i("ViPER4Android_ShellCommand", "Performing shell banner and query id, timeout = 20 secs");
+            Log.i(TAG, "Performing shell banner and query id, timeout = 20 secs");
             m_doShellStdIn.writeBytes("echo \"Enter ViPER's Root Shell\"\n");
             m_doShellStdIn.writeBytes("id\n");
             m_doShellStdIn.flush();
@@ -269,9 +272,9 @@ public class ShellCommand {
                 String[] szStdOut = GetStdOut();
                 if (szStdOut != null) {
                     for (String aSzStdOut : szStdOut) {
-                        Log.i("ViPER4Android_ShellCommand", "stdout: " + aSzStdOut);
+                        Log.i(TAG, "stdout: " + aSzStdOut);
                         if (aSzStdOut.contains("uid")) {
-                            Log.i("ViPER4Android_ShellCommand", "Got result");
+                            Log.i(TAG, "Got result");
                             if (aSzStdOut.contains("uid=0")) {
                                 bGotResult = true;
                                 bAccessGiven = true;
@@ -287,9 +290,9 @@ public class ShellCommand {
                 String[] szStdErr = GetStdErr();
                 if (szStdErr != null) {
                     for (String aSzStdErr : szStdErr) {
-                        Log.i("ViPER4Android_ShellCommand", "stderr: " + aSzStdErr);
+                        Log.i(TAG, "stderr: " + aSzStdErr);
                         if (aSzStdErr.contains("uid")) {
-                            Log.i("ViPER4Android_ShellCommand", "Got result");
+                            Log.i(TAG, "Got result");
                             if (aSzStdErr.contains("uid=0")) {
                                 bGotResult = true;
                                 bAccessGiven = true;
@@ -305,21 +308,21 @@ public class ShellCommand {
                 if (bGotResult) break;
 
                 SystemClock.sleep(100);
-                Log.i("ViPER4Android_ShellCommand", ((nWaitCount + 1) * 100) + " ms waited, still no result");
+                Log.i(TAG, ((nWaitCount + 1) * 100) + " ms waited, still no result");
             }
 
             if (bGotResult && !bAccessGiven) {
-                Log.i("ViPER4Android_ShellCommand", "Acquire root permission failed");
+                Log.i(TAG, "Acquire root permission failed");
                 CloseShell();
                 return false;
             }
             if (!bGotResult) {
-                Log.i("ViPER4Android_ShellCommand", "Acquire root permission timeout");
+                Log.i(TAG, "Acquire root permission timeout");
                 CloseShell();
                 return false;
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + ioe.getMessage());
+            Log.e(TAG, "IOException, msg = " + ioe.getMessage());
             CloseShell();
             return false;
         }
@@ -332,53 +335,53 @@ public class ShellCommand {
 
     public static void CloseShell() {
         if (m_doShellStdIn != null) {
-            Log.i("ViPER4Android_ShellCommand", "Closing shell stdandard input");
+            Log.i(TAG, "Closing shell stdandard input");
             try {
                 m_doShellStdIn.writeBytes("exit\n");
                 m_doShellStdIn.flush();
                 m_doShellStdIn.close();
             } catch (IOException ioe) {
-                Log.i("ViPER4Android_ShellCommand", "Close shell stdandard input failed, msg = " + ioe.getMessage());
+                Log.i(TAG, "Close shell stdandard input failed, msg = " + ioe.getMessage());
             }
             m_doShellStdIn = null;
         }
         ClearStdOutAndErr();
         if (m_diShellStdOut != null) {
-            Log.i("ViPER4Android_ShellCommand", "Closing shell stdandard output");
+            Log.i(TAG, "Closing shell stdandard output");
             try {
                 m_diShellStdOut.close();
             } catch (IOException ioe) {
-                Log.i("ViPER4Android_ShellCommand", "Close shell stdandard output failed, msg = " + ioe.getMessage());
+                Log.i(TAG, "Close shell stdandard output failed, msg = " + ioe.getMessage());
             }
             m_diShellStdOut = null;
         }
         if (m_diShellStdErr != null) {
-            Log.i("ViPER4Android_ShellCommand", "Closing shell stdandard error");
+            Log.i(TAG, "Closing shell stdandard error");
             try {
                 m_diShellStdErr.close();
             } catch (IOException ioe) {
-                Log.i("ViPER4Android_ShellCommand", "Close shell stdandard error failed, msg = " + ioe.getMessage());
+                Log.e(TAG, "Close shell stdandard error failed, msg = " + ioe.getMessage());
             }
             m_diShellStdErr = null;
         }
         if (m_psShellProcess != null) {
             try {
-                Log.i("ViPER4Android_ShellCommand", "Waiting for shell exit");
+                Log.i(TAG, "Waiting for shell exit");
                 m_psShellProcess.waitFor();
             } catch (InterruptedException ie) {
-                Log.i("ViPER4Android_ShellCommand", "Wait for shell exit failed, msg = " + ie.getMessage());
+                Log.e(TAG, "Wait for shell exit failed, msg = " + ie.getMessage());
             }
-            Log.i("ViPER4Android_ShellCommand", "Closing shell");
+            Log.i(TAG, "Closing shell");
             m_psShellProcess.destroy();
             m_psShellProcess = null;
         }
 
         m_bShellOpened = false;
-        Log.i("ViPER4Android_ShellCommand", "Shell closed");
+        Log.i(TAG, "Shell closed");
     }
 
     public static boolean SendShellCommand(String szCommand, float nMaxWaitSeconds) {
-        Log.i("ViPER4Android_ShellCommand", "Sending shell \"" + szCommand + "\", wait " + nMaxWaitSeconds + " seconds");
+        Log.i(TAG, "Sending shell \"" + szCommand + "\", wait " + nMaxWaitSeconds + " seconds");
 
         if (!m_bShellOpened) return false;
         if (m_doShellStdIn == null) return false;
@@ -402,32 +405,32 @@ public class ShellCommand {
                 } catch (IOException ioe) {
                     nCurrCount = 0;
                 }
-                Log.i("ViPER4Android_ShellCommand", "Waiting for command return, idx = " + nWaitCount + ", old = " + nOldCount + ", curr = " + nCurrCount);
+                Log.i(TAG, "Waiting for command return, idx = " + nWaitCount + ", old = " + nOldCount + ", curr = " + nCurrCount);
                 if (nCurrCount != nOldCount) {
-                    Log.i("ViPER4Android_ShellCommand", "Command returned");
+                    Log.i(TAG, "Command returned");
                     break;
                 }
                 SystemClock.sleep(100);
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "Send shell failed, msg = " + ioe.getMessage());
+            Log.e(TAG, "Send shell failed, msg = " + ioe.getMessage());
             return false;
         }
 
         String[] szStdOut = GetStdOut();
         if (szStdOut != null) {
-            for (String aSzStdOut : szStdOut) Log.i("ViPER4Android_ShellCommand(stdout)", aSzStdOut);
+            for (String aSzStdOut : szStdOut) Log.i(TAG,"StdOut() " + aSzStdOut);
         }
         String[] szStdErr = GetStdErr();
         if (szStdErr != null) {
-            for (String aSzStdErr : szStdErr) Log.i("ViPER4Android_ShellCommand(stderr)", aSzStdErr);
+            for (String aSzStdErr : szStdErr) Log.i(TAG, "StdErr() " + aSzStdErr);
         }
 
         return true;
     }
 
     public static boolean SendShellCommandPreserveOut(String szCommand, float nMaxWaitSeconds) {
-        Log.i("ViPER4Android_ShellCommand", "Sending shell \"" + szCommand + "\", wait " + nMaxWaitSeconds + " seconds");
+        Log.i(TAG, "Sending shell \"" + szCommand + "\", wait " + nMaxWaitSeconds + " seconds");
 
         if (!m_bShellOpened) return false;
         if (m_doShellStdIn == null) return false;
@@ -451,15 +454,15 @@ public class ShellCommand {
                 } catch (IOException ioe) {
                     nCurrCount = 0;
                 }
-                Log.i("ViPER4Android_ShellCommand", "Waiting for command return, idx = " + nWaitCount + ", old = " + nOldCount + ", curr = " + nCurrCount);
+                Log.i(TAG, "Waiting for command return, idx = " + nWaitCount + ", old = " + nOldCount + ", curr = " + nCurrCount);
                 if (nCurrCount != nOldCount) {
-                    Log.i("ViPER4Android_ShellCommand", "Command returned");
+                    Log.i(TAG, "Command returned");
                     break;
                 }
                 SystemClock.sleep(100);
             }
         } catch (IOException ioe) {
-            Log.i("ViPER4Android_ShellCommand", "Send shell failed, msg = " + ioe.getMessage());
+            Log.e(TAG, "Send shell failed, msg = " + ioe.getMessage());
             return false;
         }
 
@@ -477,7 +480,7 @@ public class ShellCommand {
                 try {
                     nRetValue = Integer.parseInt(aSzStdOut.trim());
                 } catch (NumberFormatException nfe) {
-                    continue;
+                    Log.e(TAG, "GetLastReturnValue() " + nfe.getMessage());
                 }
             }
             return nRetValue;
@@ -488,7 +491,7 @@ public class ShellCommand {
         if (szExecutable == null) return -65536;
         if (szExecutable.equals("")) return -65536;
 
-        Log.i("ViPER4Android_ShellCommand", "Executing " + szExecutable + " ...");
+        Log.i(TAG, "Executing " + szExecutable + " ...");
         int nExitValue = -65536;
         try {
             Process psProg = Runtime.getRuntime().exec(szExecutable, null, fDirectory);
@@ -496,13 +499,13 @@ public class ShellCommand {
             nExitValue = psProg.exitValue();
             psProg.destroy();
         } catch (IOException e) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + e.getMessage());
+            Log.e(TAG, "IOException, msg = " + e.getMessage());
             return nExitValue;
         } catch (InterruptedException e) {
-            Log.i("ViPER4Android_ShellCommand", "InterruptedException, msg = " + e.getMessage());
+            Log.e(TAG, "InterruptedException, msg = " + e.getMessage());
             return nExitValue;
         }
-        Log.i("ViPER4Android_ShellCommand", "Program " + szExecutable + " returned " + nExitValue);
+        Log.i(TAG, "Program " + szExecutable + " returned " + nExitValue);
 
         return nExitValue;
     }
@@ -511,7 +514,7 @@ public class ShellCommand {
         if (szExecutable == null) return -65536;
         if (szExecutable.equals("")) return -65536;
 
-        Log.i("ViPER4Android_ShellCommand", "Root executing " + szExecutable + " ...");
+        Log.i(TAG, "Root executing " + szExecutable + " ...");
         int nExitValue = -65536;
         try {
             Process psProg = Runtime.getRuntime().exec(new String[]{"su", "-c", szExecutable});
@@ -519,13 +522,13 @@ public class ShellCommand {
             nExitValue = psProg.exitValue();
             psProg.destroy();
         } catch (IOException e) {
-            Log.i("ViPER4Android_ShellCommand", "IOException, msg = " + e.getMessage());
+            Log.e(TAG, "IOException, msg = " + e.getMessage());
             return nExitValue;
         } catch (InterruptedException e) {
-            Log.i("ViPER4Android_ShellCommand", "InterruptedException, msg = " + e.getMessage());
+            Log.e(TAG, "InterruptedException, msg = " + e.getMessage());
             return nExitValue;
         }
-        Log.i("ViPER4Android_ShellCommand", "Program " + szExecutable + " returned " + nExitValue);
+        Log.i(TAG, "Program " + szExecutable + " returned " + nExitValue);
 
         return nExitValue;
     }

@@ -44,7 +44,6 @@ import static com.vipercn.viper4android_v2.cmdprocessor.CMDProcessor.runShellCom
 import static com.vipercn.viper4android_v2.cmdprocessor.CMDProcessor.startSuCommand;
 
 public class Helpers {
-
     private static final String BUILD_PROP = "/system/build.prop";
     // don't show unavoidable warnings
     @SuppressWarnings({
@@ -55,7 +54,7 @@ public class Helpers {
             "DynamicRegexReplaceableByCompiledPattern",
             "BreakStatement"})
     // avoids hardcoding the tag
-    private static final String TAG = Thread.currentThread().getStackTrace()[1].getClassName();
+    private static final String TAG = "ViPER4Android_" + Thread.currentThread().getStackTrace()[1].getClassName();
 
     public Helpers() {
         // dummy constructor
@@ -65,7 +64,7 @@ public class Helpers {
         try {
             return context.getResources().getString(resID);
         } catch (NullPointerException e) {
-            Log.e("GRAB_STRING", "" + e);
+            Log.e(TAG, "GRAB_STRING " + e.getMessage());
             return "";
         }
     }

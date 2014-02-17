@@ -62,6 +62,8 @@ import com.vipercn.viper4android_v2.R;
 import com.vipercn.viper4android_v2.service.ViPER4AndroidService;
 
 public final class ViPER4Android extends FragmentActivity {
+    private static String TAG = "ViPER4Android";
+
     private boolean CheckFirstRun() {
         PackageManager packageMgr = getPackageManager();
         PackageInfo packageInfo;
@@ -134,7 +136,7 @@ public final class ViPER4Android extends FragmentActivity {
         szCode = szCode + "-" + Build.VERSION.SDK_INT;
 
         String szURL = "http://vipersaudio.com/stat/v4a_stat.php?code=" + szCode + "&ver=viper4android-fx";
-        Log.i("ViPER4Android", "Submit code = \"" + szURL + "\"");
+        Log.i(TAG, "Submit code = \"" + szURL + "\"");
 
         try {
             HttpGet httpRequest = new HttpGet(szURL);
@@ -142,7 +144,7 @@ public final class ViPER4Android extends FragmentActivity {
             HttpResponse httpResponse = httpClient.execute(httpRequest);
             return httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
         } catch (Exception e) {
-            Log.i("ViPER4Android", "Submit failed, error = " + e.getMessage());
+            Log.e(TAG, "Submit failed, error = " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -165,13 +167,13 @@ public final class ViPER4Android extends FragmentActivity {
                 szApkVer = packageInfo.versionName;
                 bDriverIsUsable = szApkVer.equalsIgnoreCase(szDriverVersion);
             } catch (NameNotFoundException e) {
-                Log.i("ViPER4Android", "Cannot found ViPER4Android's apk [weird]");
+                Log.i(TAG, "Cannot found ViPER4Android's apk [weird]");
                 bDriverIsUsable = true;
             }
         }
 
         if (!bDriverIsUsable) {
-            Log.i("ViPER4Android", "Android audio effect engine reports the v4a driver is not usable");
+            Log.i(TAG, "Android audio effect engine reports the v4a driver is not usable");
             Message message = new Message();
             message.what = 0xA00A;
             message.obj = (Context) this;
@@ -202,7 +204,7 @@ public final class ViPER4Android extends FragmentActivity {
         else szDriverFile = szDriverFile + "NOVFP";
 
         szDriverFile = szDriverFile + ".so";
-        Log.i("ViPER4Android", "Driver selection = " + szDriverFile);
+        Log.i(TAG, "Driver selection = " + szDriverFile);
 
         return szDriverFile;
     }
@@ -360,11 +362,19 @@ public final class ViPER4Android extends FragmentActivity {
             ViPER4AndroidService service;
             service = ((ViPER4AndroidService.LocalBinder) binder).getService();
             mAudioServiceInstance = service;
+            String[] entries = pagerAdapter.getEntries();
+            String routing = service.getAudioOutputRouting(getSharedPreferences(ViPER4Android.SHARED_PREFERENCES_BASENAME + ".settings", MODE_PRIVATE));
+            for (int i = 0; i < entries.length; i++) {
+                if (routing.equals(entries[i])) {
+                    viewPager.setCurrentItem(i);
+                    break;
+                }
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.i("ViPER4Android", "ViPER4Android service disconnected.");
+            Log.i(TAG, "ViPER4Android service disconnected.");
         }
     };
 
@@ -374,18 +384,12 @@ public final class ViPER4Android extends FragmentActivity {
 
         // Load jni first
         boolean bJniLoaded = V4AJniInterface.CheckLibrary();
-        Log.i("ViPER4Android", "Jni library status = " + bJniLoaded);
+        Log.i(TAG, "Jni library status = " + bJniLoaded);
 
         // Welcome window
         if (CheckFirstRun()) {
             // TODO: Welcome window
         }
-
-        // Start background service
-        Log.i("ViPER4Android", "Starting service, reason = ViPER4Android::onCreate");
-        Intent serviceIntent = new Intent(this, ViPER4AndroidService.class);
-        startService(serviceIntent);
-        bindService(serviceIntent, mAudioServiceConnection, Context.BIND_IMPORTANT);
 
         // Setup ui
         setContentView(R.layout.top);
@@ -399,6 +403,10 @@ public final class ViPER4Android extends FragmentActivity {
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setDrawFullUnderline(true);
         pagerTabStrip.setTabIndicatorColor(getResources().getColor(android.R.color.holo_blue_light));
+
+        Intent serviceIntent = new Intent(this, ViPER4AndroidService.class);
+        startService(serviceIntent);
+        bindService(serviceIntent, mAudioServiceConnection, 0);
 
         // Show changelog
         if (CheckFirstRun()) {
@@ -446,11 +454,11 @@ public final class ViPER4Android extends FragmentActivity {
             @Override
             public void run() {
                 // Init environment
-                Log.i("ViPER4Android", "Init environment");
+                Log.i(TAG, "Init environment");
                 StaticEnvironment.InitEnvironment(mActivityContext);
 
                 // Driver check loop
-                Log.i("ViPER4Android", "Check driver");
+                Log.i(TAG, "Check driver");
                 ProcessDriverCheck();
             }
         });
@@ -459,7 +467,7 @@ public final class ViPER4Android extends FragmentActivity {
 
     @Override
     public void onDestroy() {
-        Log.i("ViPER4Android", "Main activity onDestroy()");
+        Log.i(TAG, "Main activity onDestroy()");
         unbindService(mAudioServiceConnection);
         mAudioServiceInstance = null;
         super.onDestroy();
@@ -467,18 +475,13 @@ public final class ViPER4Android extends FragmentActivity {
 
     @Override
     public void onResume() {
-        Log.i("ViPER4Android", "Main activity onResume()");
+        Log.i(TAG, "Main activity onResume()");
 
         super.onResume();
 
-        String routing = ViPER4AndroidService.getAudioOutputRouting(getSharedPreferences(ViPER4Android.SHARED_PREFERENCES_BASENAME + ".settings", MODE_PRIVATE));
-        String[] entries = pagerAdapter.getEntries();
-        for (int i = 0; i < entries.length; i++) {
-            if (routing.equals(entries[i])) {
-                viewPager.setCurrentItem(i);
-                break;
-            }
-        }
+        Intent serviceIntent = new Intent(this, ViPER4AndroidService.class);
+        startService(serviceIntent);
+        bindService(serviceIntent, mAudioServiceConnection, 0);
     }
 
     @Override
@@ -496,7 +499,7 @@ public final class ViPER4Android extends FragmentActivity {
 
     	/* Just for debug */
         String szLockedEffect = preferences.getString("viper4android.settings.lock_effect", "none");
-        Log.i("ViPER4Android", "lock_effect = " + szLockedEffect);
+        Log.i(TAG, "lock_effect = " + szLockedEffect);
         /******************/
 
         // Notification icon menu
@@ -691,6 +694,7 @@ public final class ViPER4Android extends FragmentActivity {
                     szChangeLog = ReadTextFile(isHandle);
                     isHandle.close();
                 } catch (Exception e) {
+                    Log.e(TAG, "changelog " + e.getMessage());
                 }
 
                 if (szChangeLog.equalsIgnoreCase("")) return true;
@@ -725,7 +729,7 @@ public final class ViPER4Android extends FragmentActivity {
                         .setItems(arrayProfileList, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 String szProfilePath = StaticEnvironment.GetV4AProfilePath();
-                                Log.i("ViPER4Android", "Load effect profile, current page = " + nCurrentPage);
+                                Log.i(TAG, "Load effect profile, current page = " + nCurrentPage);
                                 String szPreferenceName[] = new String[3];
                                 szPreferenceName[0] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".headset";
                                 szPreferenceName[1] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".speaker";
@@ -838,7 +842,7 @@ public final class ViPER4Android extends FragmentActivity {
                                         mConfirm.setPositiveButton(getResources().getString(R.string.text_yes), new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                Log.i("ViPER4Android", "Save effect profile, current page = " + nCurrentPage);
+                                                Log.i(TAG, "Save effect profile, current page = " + nCurrentPage);
                                                 String szPreferenceName[] = new String[3];
                                                 szPreferenceName[0] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".headset";
                                                 szPreferenceName[1] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".speaker";
@@ -857,7 +861,7 @@ public final class ViPER4Android extends FragmentActivity {
                                     }
 
                                     // Save the profile please
-                                    Log.i("ViPER4Android", "Save effect profile, current page = " + nCurrentPage);
+                                    Log.i(TAG, "Save effect profile, current page = " + nCurrentPage);
                                     String szPreferenceName[] = new String[3];
                                     szPreferenceName[0] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".headset";
                                     szPreferenceName[1] = ViPER4Android.SHARED_PREFERENCES_BASENAME + ".speaker";
@@ -1136,8 +1140,8 @@ class MyAdapter extends FragmentPagerAdapter {
         tmpTitles.add(res.getString(R.string.speaker_title).toUpperCase());
         tmpTitles.add(res.getString(R.string.bluetooth_title).toUpperCase());
 
-        entries = (String[]) tmpEntries.toArray(new String[tmpEntries.size()]);
-        titles = (String[]) tmpTitles.toArray(new String[tmpTitles.size()]);
+        entries = tmpEntries.toArray(new String[tmpEntries.size()]);
+        titles = tmpTitles.toArray(new String[tmpTitles.size()]);
     }
 
     @Override

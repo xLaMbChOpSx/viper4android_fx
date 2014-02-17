@@ -11,11 +11,12 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
-import com.stericson.RootTools.*;
+import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.exceptions.RootDeniedException;
 import com.stericson.RootTools.execution.CommandCapture;
 
 public class StaticEnvironment {
+    private static String TAG = "ViPER4Android_StaticEnvironment";
     private static boolean m_bEnvironmentInited = false;
 
     private static boolean m_bVBoXPrepared = false;
@@ -27,114 +28,114 @@ public class StaticEnvironment {
     private static String m_szV4AESProfile = "";
 
     private static boolean InstallVBox(Context ctx) {
-        Log.i("ViPER4Android", "Installing vbox ...");
+        Log.i(TAG, "Installing vbox ...");
 
         // Copy vbox to local first
-        Log.i("ViPER4Android", "Extracting vbox to local");
+        Log.i(TAG, "Extracting vbox to local");
         if (!Utils.CopyAssetsToLocal(ctx, "vbox", "vbox")) {
-            Log.i("ViPER4Android", "Can not copy vbox to local dir");
+            Log.i(TAG, "Can not copy vbox to local dir");
             return false;
         }
 
         // Get vbox path
         String szVBoxPath = Utils.GetBasePath(ctx);
         if (szVBoxPath.equals("")) {
-            Log.i("ViPER4Android", "GetBasePath() failed");
+            Log.i(TAG, "GetBasePath() failed");
             return false;
         }
         if (szVBoxPath.endsWith("/")) szVBoxPath = szVBoxPath + "vbox";
         else szVBoxPath = szVBoxPath + "/vbox";
-        Log.i("ViPER4Android", "vbox path = " + szVBoxPath);
+        Log.i(TAG, "vbox path = " + szVBoxPath);
 
         boolean bVBoXInstalled = false;
 
         // Try toolbox first
-        Log.i("ViPER4Android", "Now install vbox with viper's method [toolbox]");
+        Log.i(TAG, "Now install vbox with viper's method [toolbox]");
         {
             if (ShellCommand.OpenRootShell(true)) {
                 /* Toolbox is a basic util for android system */
                 /* Considering the fragmentation of android, cp and dd commands may not included in all roms */
     			/* But cat and chmod should included, otherwise android may malfunction */
     			/* NOTICE: toolbox has no command stdout echo, so I just wait 0.5 secs for executing the command */
-                boolean bResult = true;
-                bResult &= ShellCommand.SendShellCommand("toolbox cat " + szVBoxPath + " > /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                boolean bResult;
+                bResult = ShellCommand.SendShellCommand("toolbox cat " + szVBoxPath + " > /data/vbox", 0.5f);
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
                 bResult &= ShellCommand.SendShellCommand("toolbox chmod 777 /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
     			/* I think the best way to check wether vbox was installed is execute it and check the exit value */
                 bResult &= ShellCommand.SendShellCommand("/data/vbox", 1.0f);  /* vbox has command stdout echo (except dd and cat), so we can wait infinite here */
                 int nVBoXExitValue = ShellCommand.GetLastReturnValue();  /* If the shell failed to execute vbox, the return value will never equal 0 */
                 if (bResult && (nVBoXExitValue == 0)) {
-                    Log.i("ViPER4Android", "Good, vbox installed");
+                    Log.i(TAG, "Good, vbox installed");
                     bVBoXInstalled = true;
                 } else {
-                    Log.i("ViPER4Android", "Bad, vbox install failed");
+                    Log.i(TAG, "Bad, vbox install failed");
                     bVBoXInstalled = false;
                 }
                 ShellCommand.CloseShell();
             } else {
-                Log.i("ViPER4Android", "Can't open root shell");
+                Log.i(TAG, "Can't open root shell");
             }
         }
         if (bVBoXInstalled)
             return true;
 
         // Try busybox
-        Log.i("ViPER4Android", "Now install vbox with viper's method [busybox]");
+        Log.i(TAG, "Now install vbox with viper's method [busybox]");
         {
             if (ShellCommand.OpenRootShell(true)) {
-                boolean bResult = true;
-                bResult &= ShellCommand.SendShellCommand("busybox cat " + szVBoxPath + " > /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                boolean bResult;
+                bResult = ShellCommand.SendShellCommand("busybox cat " + szVBoxPath + " > /data/vbox", 0.5f);
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
                 bResult &= ShellCommand.SendShellCommand("busybox chmod 777 /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
     			/* I think the best way to check wether vbox was installed is execute it and check the exit value */
                 bResult &= ShellCommand.SendShellCommand("/data/vbox", 1.0f);  /* vbox has command stdout echo (except dd and cat), so we can wait infinite here */
                 int nVBoXExitValue = ShellCommand.GetLastReturnValue();  /* If the shell failed to execute vbox, the return value will never equal 0 */
                 if (bResult && (nVBoXExitValue == 0)) {
-                    Log.i("ViPER4Android", "Good, vbox installed");
+                    Log.i(TAG, "Good, vbox installed");
                     bVBoXInstalled = true;
                 } else {
-                    Log.i("ViPER4Android", "Bad, vbox install failed");
+                    Log.i(TAG, "Bad, vbox install failed");
                     bVBoXInstalled = false;
                 }
                 ShellCommand.CloseShell();
             } else {
-                Log.i("ViPER4Android", "Can't open root shell");
+                Log.i(TAG, "Can't open root shell");
             }
         }
         if (bVBoXInstalled)
             return true;
 
         // Try direct
-        Log.i("ViPER4Android", "Now install vbox with viper's method [direct]");
+        Log.i(TAG, "Now install vbox with viper's method [direct]");
         {
             if (ShellCommand.OpenRootShell(true)) {
-                boolean bResult = true;
-                bResult &= ShellCommand.SendShellCommand("cat " + szVBoxPath + " > /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                boolean bResult;
+                bResult = ShellCommand.SendShellCommand("cat " + szVBoxPath + " > /data/vbox", 0.5f);
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
                 bResult &= ShellCommand.SendShellCommand("chmod 777 /data/vbox", 0.5f);
-                Log.i("ViPER4Android", "Command return = " + ShellCommand.GetLastReturnValue());
+                Log.i(TAG, "Command return = " + ShellCommand.GetLastReturnValue());
     			/* I think the best way to check wether vbox was installed is execute it and check the exit value */
                 bResult &= ShellCommand.SendShellCommand("/data/vbox", 1.0f);  /* vbox has command stdout echo (except dd and cat), so we can wait infinite here */
                 int nVBoXExitValue = ShellCommand.GetLastReturnValue();  /* If the shell failed to execute vbox, the return value will never equal 0 */
                 if (bResult && (nVBoXExitValue == 0)) {
-                    Log.i("ViPER4Android", "Good, vbox installed");
+                    Log.i(TAG, "Good, vbox installed");
                     bVBoXInstalled = true;
                 } else {
-                    Log.i("ViPER4Android", "Bad, vbox install failed");
+                    Log.i(TAG, "Bad, vbox install failed");
                     bVBoXInstalled = false;
                 }
                 ShellCommand.CloseShell();
             } else {
-                Log.i("ViPER4Android", "Can't open root shell");
+                Log.i(TAG, "Can't open root shell");
             }
         }
         if (bVBoXInstalled)
             return true;
 
         // Try roottools
-        Log.i("ViPER4Android", "Now install vbox with roottools");
+        Log.i(TAG, "Now install vbox with roottools");
         {
             RootTools.debugMode = true;
 
@@ -145,8 +146,9 @@ public class StaticEnvironment {
                 try {
                     RootTools.closeAllShells();
                 } catch (IOException e) {
+                    Log.e(TAG, "vbox install failed " + e.getMessage());
                 }
-                Log.i("ViPER4Android", "Bad, vbox install failed");
+                Log.i(TAG, "Bad, vbox install failed");
                 return false;
             }
 
@@ -168,29 +170,30 @@ public class StaticEnvironment {
             try {
                 RootTools.closeAllShells();
             } catch (IOException e) {
+                Log.e(TAG, "closeAllShells() failed " + e.getMessage());
             }
 
             if (bError) {
-                Log.i("ViPER4Android", "Bad, vbox install failed");
+                Log.i(TAG, "Bad, vbox install failed");
                 return false;
             }
         }
 
         // Now lets check vbox
         if (ShellCommand.ExecuteWithoutShell("/data/vbox", null) == 0) {
-            Log.i("ViPER4Android", "Good, vbox installed");
+            Log.i(TAG, "Good, vbox installed");
             return true;
         } else {
-            Log.i("ViPER4Android", "Bad, vbox install failed");
+            Log.i(TAG, "Bad, vbox install failed");
             return false;
         }
     }
 
     private static void ProceedVBoX(Context ctx) {
         // Check vbox
-        Log.i("ViPER4Android", "Checking vbox");
+        Log.i(TAG, "Checking vbox");
         if (ShellCommand.ExecuteWithoutShell("/data/vbox", null) == 0) {
-            Log.i("ViPER4Android", "Good, vbox is ok");
+            Log.i(TAG, "Good, vbox is ok");
             m_bVBoXPrepared = true;
             m_szVBoXPath = "/data/vbox";
             return;
@@ -217,10 +220,10 @@ public class StaticEnvironment {
             fosOutput.close();
             return new File(szFileName).delete();
         } catch (FileNotFoundException e) {
-            Log.i("ViPER4Android", "FileNotFoundException, msg = " + e.getMessage());
+            Log.e(TAG, "FileNotFoundException, msg = " + e.getMessage());
             return false;
         } catch (IOException e) {
-            Log.i("ViPER4Android", "IOException, msg = " + e.getMessage());
+            Log.e(TAG, "IOException, msg = " + e.getMessage());
             return false;
         }
     }
@@ -248,7 +251,7 @@ public class StaticEnvironment {
                 if (szExternalStoragePathName.endsWith("/")) szExtPath = szExternalStoragePathName;
                 else szExtPath = szExternalStoragePathName + "/";
                 szExtPath = szExtPath + "v4a_test_file";
-                Log.i("ViPER4Android", "Now checking for external storage writable, file = " + szExtPath);
+                Log.i(TAG, "Now checking for external storage writable, file = " + szExtPath);
                 if (CheckWritable(szExtPath)) bPathFromSDKIsWorking = true;
             }
             {
@@ -257,7 +260,7 @@ public class StaticEnvironment {
                 if (szExtPath.endsWith("/emulated/0/")) {
                     szExtPath = szExtPath.replace("/emulated/0/", "/emulated/legacy/");
                     szExtPath = szExtPath + "v4a_test_file";
-                    Log.i("ViPER4Android", "Now checking for external storage writable, file = " + szExtPath);
+                    Log.i(TAG, "Now checking for external storage writable, file = " + szExtPath);
                     if (CheckWritable(szExtPath)) bPathFromLegacyIsWorking = true;
                 }
             }
@@ -269,10 +272,10 @@ public class StaticEnvironment {
                 m_szV4AESRoot = m_szExternalStoragePath + "ViPER4Android/";
                 m_szV4AESKernel = m_szV4AESRoot + "Kernel/";
                 m_szV4AESProfile = m_szV4AESRoot + "Profile/";
-                Log.i("ViPER4Android", "External storage path = " + m_szExternalStoragePath);
-                Log.i("ViPER4Android", "ViPER4Android root path = " + m_szV4AESRoot);
-                Log.i("ViPER4Android", "ViPER4Android kernel path = " + m_szV4AESKernel);
-                Log.i("ViPER4Android", "ViPER4Android profile path = " + m_szV4AESProfile);
+                Log.i(TAG, "External storage path = " + m_szExternalStoragePath);
+                Log.i(TAG, "ViPER4Android root path = " + m_szV4AESRoot);
+                Log.i(TAG, "ViPER4Android kernel path = " + m_szV4AESKernel);
+                Log.i(TAG, "ViPER4Android profile path = " + m_szV4AESProfile);
                 return;
             }
             if (bPathFromSDKIsWorking) {
@@ -281,14 +284,14 @@ public class StaticEnvironment {
                 m_szV4AESRoot = m_szExternalStoragePath + "ViPER4Android/";
                 m_szV4AESKernel = m_szV4AESRoot + "Kernel/";
                 m_szV4AESProfile = m_szV4AESRoot + "Profile/";
-                Log.i("ViPER4Android", "External storage path = " + m_szExternalStoragePath);
-                Log.i("ViPER4Android", "ViPER4Android root path = " + m_szV4AESRoot);
-                Log.i("ViPER4Android", "ViPER4Android kernel path = " + m_szV4AESKernel);
-                Log.i("ViPER4Android", "ViPER4Android profile path = " + m_szV4AESProfile);
+                Log.i(TAG, "External storage path = " + m_szExternalStoragePath);
+                Log.i(TAG, "ViPER4Android root path = " + m_szV4AESRoot);
+                Log.i(TAG, "ViPER4Android kernel path = " + m_szV4AESKernel);
+                Log.i(TAG, "ViPER4Android profile path = " + m_szV4AESProfile);
                 return;
             }
 
-            Log.i("ViPER4Android", "Really terrible thing, external storage detection failed, v4a may malfunctioned");
+            Log.i(TAG, "Really terrible thing, external storage detection failed, v4a may malfunctioned");
             if (szExternalStoragePathName.endsWith("/")) m_szExternalStoragePath = szExternalStoragePathName;
             else m_szExternalStoragePath = szExternalStoragePathName + "/";
             m_szV4AESRoot = m_szExternalStoragePath + "ViPER4Android/";
