@@ -69,10 +69,10 @@ public abstract class AbstractAsyncSuCMDProcessor extends AsyncTask<String, Void
         try {
             // process all commands ***DO NOT SEND null OR ""; you have been
             // warned***
-            for (int i = 0; params.length > i; i++) {
+            for (String param : params) {
                 // always watch for null and empty strings, lazy devs :/
-                if (params[i] != null && !params[i].trim().equals("")) {
-                    stdout = CMDProcessor.runSuCommand(params[i]).getStdout();
+                if (param != null && !param.trim().equals("")) {
+                    stdout = CMDProcessor.runSuCommand(param).getStdout();
                 } else {
                     // bail because of careless devs
                     return "failed_no_command";

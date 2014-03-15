@@ -79,6 +79,7 @@ public final class ViPER4Android extends Activity {
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
     private static final String PREF_IS_TABBED = "pref_is_tabbed";
+
     // ==================================
     public static final String SHARED_PREFERENCES_BASENAME = "com.vipercn.viper4android_v2";
     public static final String ACTION_UPDATE_PREFERENCES = "com.vipercn.viper4android_v2.UPDATE";
@@ -89,11 +90,14 @@ public final class ViPER4Android extends Activity {
     private static String[] mEntries;
     private static List<HashMap<String, String>> mTitles;
 
+    private String spDir;
+
     // ==================================
     // Drawer
     // ==================================
     private ActionBarDrawerToggle mDrawerToggle;
     private CustomDrawerLayout mDrawerLayout;
+    private ActionBar mActionBar;
     private ListView mDrawerListView;
     private View mFragmentContainerView;
     private int mCurrentSelectedPosition;
@@ -111,16 +115,16 @@ public final class ViPER4Android extends Activity {
     // Fields
     // ==================================
     private SharedPreferences mPreferences;
+    private PackageManager mPackageMgr;
+    private PackageInfo mPackageInfo;
     private boolean mIsTabbed = true;
     private CharSequence mTitle;
 
     private boolean checkFirstRun() {
-        PackageManager packageMgr = getPackageManager();
-        PackageInfo packageInfo;
         String mVersion;
         try {
-            packageInfo = packageMgr.getPackageInfo(getPackageName(), 0);
-            mVersion = packageInfo.versionName;
+            mPackageInfo = mPackageMgr.getPackageInfo(getPackageName(), 0);
+            mVersion = mPackageInfo.versionName;
         } catch (NameNotFoundException e) {
             return false;
         }
@@ -133,12 +137,10 @@ public final class ViPER4Android extends Activity {
     }
 
     private void setFirstRun() {
-        PackageManager packageMgr = getPackageManager();
-        PackageInfo packageInfo;
         String mVersion;
         try {
-            packageInfo = packageMgr.getPackageInfo(getPackageName(), 0);
-            mVersion = packageInfo.versionName;
+            mPackageInfo = mPackageMgr.getPackageInfo(getPackageName(), 0);
+            mVersion = mPackageInfo.versionName;
         } catch (NameNotFoundException e) {
             return;
         }
@@ -207,22 +209,22 @@ public final class ViPER4Android extends Activity {
     }
 
     private void processDriverCheck() {
-        boolean isDriverUsable;
+        boolean isDriverUsable = false;
 
         Utils.AudioEffectUtils aeuUtils = new Utils().new AudioEffectUtils();
         if (!aeuUtils.isViPER4AndroidEngineFound()) {
             isDriverUsable = false;
         } else {
-            PackageManager packageMgr = getPackageManager();
-            PackageInfo packageInfo;
             String apkVersion;
             try {
                 int[] iaDrvVer = aeuUtils.getViper4AndroidEngineVersion();
                 String mDriverVersion = iaDrvVer[0] + "." + iaDrvVer[1] + "." + iaDrvVer[2] + "."
                         + iaDrvVer[3];
-                packageInfo = packageMgr.getPackageInfo(getPackageName(), 0);
-                apkVersion = packageInfo.versionName;
-                isDriverUsable = apkVersion.equalsIgnoreCase(mDriverVersion);
+                if (mPackageMgr != null) {
+                    mPackageInfo = mPackageMgr.getPackageInfo(getPackageName(), 0);
+                    apkVersion = mPackageInfo.versionName;
+                    isDriverUsable = apkVersion.equalsIgnoreCase(mDriverVersion);
+                }
             } catch (NameNotFoundException e) {
                 Log.i("ViPER4Android", "Cannot found ViPER4Android's apk [weird]");
                 isDriverUsable = true;
@@ -666,9 +668,14 @@ public final class ViPER4Android extends Activity {
         Intent serviceIntent = new Intent(this, ViPER4AndroidService.class);
         startService(serviceIntent);
 
+        Context mContext = this;
+        if (mContext.getApplicationInfo() != null)
+            spDir = mContext.getApplicationInfo().dataDir + "/shared_prefs/";
+
         // Setup ui
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mUserLearnedDrawer = mPreferences.getBoolean(PREF_USER_LEARNED_DRAWER, false);
+        mPackageMgr = mContext.getPackageManager();
 
         if (getResources().getBoolean(R.bool.config_allow_toggle_tabbed)) {
             mIsTabbed = mPreferences.getBoolean(PREF_IS_TABBED,
@@ -680,10 +687,12 @@ public final class ViPER4Android extends Activity {
         mTitle = getTitle();
 
         // Setup action bar
-        ActionBar mActionBar = getActionBar();
-        mActionBar.setDisplayHomeAsUpEnabled(true);
-        mActionBar.setHomeButtonEnabled(true);
-        mActionBar.setDisplayShowTitleEnabled(true);
+        mActionBar = getActionBar();
+        if (mActionBar != null) {
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+            mActionBar.setHomeButtonEnabled(true);
+            mActionBar.setDisplayShowTitleEnabled(true);
+        }
 
         // Setup effect setting page
         if (savedInstanceState != null) {
@@ -781,7 +790,6 @@ public final class ViPER4Android extends Activity {
             @Override
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 Log.i("ViPER4Android", "ViPER4Android service connected");
-
                 mAudioServiceInstance = ((ViPER4AndroidService.LocalBinder) binder).getService();
                 String routing = ViPER4AndroidService.getAudioOutputRouting(getSharedPreferences(
                         SHARED_PREFERENCES_BASENAME + ".settings", MODE_PRIVATE));
@@ -807,7 +815,7 @@ public final class ViPER4Android extends Activity {
 
         Log.i("ViPER4Android", "onResume(), Binding service ...");
         Intent serviceIntent = new Intent(this, ViPER4AndroidService.class);
-        bindService(serviceIntent, connection, Context.BIND_IMPORTANT);
+        bindService(serviceIntent, connection, BIND_ABOVE_CLIENT);
     }
 
     @Override
@@ -817,10 +825,10 @@ public final class ViPER4Android extends Activity {
             if (!getResources().getBoolean(R.bool.config_allow_toggle_tabbed)) {
                 menu.removeItem(R.id.v4a_action_tabbed);
             }
-            getActionBar().setTitle(mTitle);
+            mActionBar.setTitle(mTitle);
             return true;
         } else {
-            getActionBar().setTitle(getString(R.string.app_name));
+            mActionBar.setTitle(getString(R.string.app_name));
             return super.onCreateOptionsMenu(menu);
         }
     }
@@ -839,11 +847,13 @@ public final class ViPER4Android extends Activity {
             if (mEnableNotify) {
                 MenuItem mNotify = menu.findItem(R.id.notify);
                 String mNotifyTitle = getResources().getString(R.string.text_hidetrayicon);
-                mNotify.setTitle(mNotifyTitle);
+                if (mNotify != null)
+                    mNotify.setTitle(mNotifyTitle);
             } else {
                 MenuItem mNotify = menu.findItem(R.id.notify);
                 String mNotifyTitle = getResources().getString(R.string.text_showtrayicon);
-                mNotify.setTitle(mNotifyTitle);
+                if (mNotify != null)
+                    mNotify.setTitle(mNotifyTitle);
             }
 
             // Driver mode menu
@@ -854,41 +864,50 @@ public final class ViPER4Android extends Activity {
             if (!isDriverInGlobalMode) {
                 /* If the driver is in compatible mode, driver status is invalid */
                 MenuItem mDrvStatus = menu.findItem(R.id.drvstatus);
-                mDrvStatus.setEnabled(false);
+                if (mDrvStatus != null)
+                    mDrvStatus.setEnabled(false);
             } else {
                 MenuItem mDrvStatus = menu.findItem(R.id.drvstatus);
-                mDrvStatus.setEnabled(true);
+                if (mDrvStatus != null)
+                    mDrvStatus.setEnabled(true);
             }
 
             // Driver install/uninstall menu
             if (mAudioServiceInstance == null) {
                 MenuItem drvInstItem = menu.findItem(R.id.drvinst);
                 String menuTitle = getResources().getString(R.string.text_install);
-                drvInstItem.setTitle(menuTitle);
-                if (!StaticEnvironment.isEnvironmentInitialized()) {
-                    drvInstItem.setEnabled(false);
-                } else {
-                    drvInstItem.setEnabled(true);
+                if (drvInstItem != null)
+                {
+                    drvInstItem.setTitle(menuTitle);
+                    if (!StaticEnvironment.isEnvironmentInitialized()) {
+                        drvInstItem.setEnabled(false);
+                    } else {
+                        drvInstItem.setEnabled(true);
+                    }
                 }
             } else {
                 boolean mDriverIsReady = mAudioServiceInstance.getDriverIsReady();
                 if (mDriverIsReady) {
                     MenuItem drvInstItem = menu.findItem(R.id.drvinst);
                     String menuTitle = getResources().getString(R.string.text_uninstall);
-                    drvInstItem.setTitle(menuTitle);
-                    if (!StaticEnvironment.isEnvironmentInitialized())
-                        drvInstItem.setEnabled(false);
-                    else
-                        drvInstItem.setEnabled(true);
-                } else {
-                    MenuItem drvInstItem = menu.findItem(R.id.drvinst);
-                    String menuTitle = getResources().getString(R.string.text_install);
-                    drvInstItem.setTitle(menuTitle);
-                    if (!StaticEnvironment.isEnvironmentInitialized())
-                        drvInstItem.setEnabled(false);
-                    else
-                        drvInstItem.setEnabled(true);
-                }
+                    if (drvInstItem != null) {
+                        drvInstItem.setTitle(menuTitle);
+                        if (!StaticEnvironment.isEnvironmentInitialized())
+                            drvInstItem.setEnabled(false);
+                        else
+                            drvInstItem.setEnabled(true);
+                    }
+                    } else {
+                        MenuItem drvInstItem = menu.findItem(R.id.drvinst);
+                        String menuTitle = getResources().getString(R.string.text_install);
+                        if (drvInstItem != null) {
+                            drvInstItem.setTitle(menuTitle);
+                            if (!StaticEnvironment.isEnvironmentInitialized())
+                                drvInstItem.setEnabled(false);
+                            else
+                                drvInstItem.setEnabled(true);
+                        }
+                    }
             }
         }
         return super.onPrepareOptionsMenu(menu);
@@ -907,12 +926,12 @@ public final class ViPER4Android extends Activity {
         int choice = item.getItemId();
         switch (choice) {
             case R.id.about: {
-                PackageManager packageMgr = getPackageManager();
-                PackageInfo packageInfo;
-                String mVersion;
+                String mVersion = "N/A";
                 try {
-                    packageInfo = packageMgr.getPackageInfo(getPackageName(), 0);
-                    mVersion = packageInfo.versionName;
+                    if (mPackageMgr != null) {
+                        mPackageInfo = mPackageMgr.getPackageInfo(getPackageName(), 0);
+                        mVersion = mPackageInfo.versionName;
+                    }
                 } catch (NameNotFoundException e) {
                     mVersion = "N/A";
                 }
@@ -957,8 +976,11 @@ public final class ViPER4Android extends Activity {
                             Bundle state) {
                         if (mAudioServiceInstance == null) {
                             View v = inflater.inflate(R.layout.drvstatus, null);
-                            TextView tv = (TextView) v.findViewById(R.id.drv_status);
-                            tv.setText(R.string.text_service_error);
+                            TextView tv;
+                            if (v != null) {
+                                tv = (TextView) v.findViewById(R.id.drv_status);
+                                tv.setText(R.string.text_service_error);
+                            }
                             return v;
                         } else {
                             mAudioServiceInstance.startStatusUpdating();
@@ -1001,8 +1023,11 @@ public final class ViPER4Android extends Activity {
                                     mAudioServiceInstance.getDriverSamplingRate());
 
                             View v = inflater.inflate(R.layout.drvstatus, null);
-                            TextView tv = (TextView) v.findViewById(R.id.drv_status);
-                            tv.setText(mDrvStatus);
+                            TextView tv;
+                            if (v != null) {
+                                tv = (TextView) v.findViewById(R.id.drv_status);
+                                tv.setText(mDrvStatus);
+                            }
                             return v;
                         }
                     }
@@ -1288,7 +1313,7 @@ public final class ViPER4Android extends Activity {
             });
 
             mDrawerListView.setAdapter(new SimpleAdapter(
-                    getActionBar().getThemedContext(),
+                    mActionBar.getThemedContext(),
                     mTitles,
                     R.layout.drawer_item,
                     new String[] {
@@ -1360,8 +1385,11 @@ public final class ViPER4Android extends Activity {
                                     getResources().getString(R.string.text_ok),
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {
-                                            String value = input.getText().toString();
-                                            saveProfile(value);
+                                            String value;
+                                            if (input.getText() != null) {
+                                                value=input.getText().toString();
+                                                saveProfile(value);
+                                            }
                                         }
                                     });
                             inputBuilder.setNegativeButton(
@@ -1413,8 +1441,8 @@ public final class ViPER4Android extends Activity {
             }
         });
         if (profiles != null) {
-            for (int i = 0; i < profiles.length; i++) {
-                profilenames.add(profiles[i].getName());
+            for (File profile : profiles) {
+                profilenames.add(profile.getName());
             }
         }
 
@@ -1436,7 +1464,6 @@ public final class ViPER4Android extends Activity {
     }
 
     public void saveProfile(String name) {
-        final String spDir = getApplicationInfo().dataDir + "/shared_prefs/";
 
         // Copy the SharedPreference to our output directory
         File profileDir = new File(StaticEnvironment.getV4aProfilePath() + "/" + name);
@@ -1516,7 +1543,6 @@ public final class ViPER4Android extends Activity {
         }
 
         final String packageName = SHARED_PREFERENCES_BASENAME + ".";
-        final String spDir = getApplicationInfo().dataDir + "/shared_prefs/";
 
         try {
             copy(new File(profileDir, packageName + "bluetooth.xml"),
@@ -1628,7 +1654,7 @@ public final class ViPER4Android extends Activity {
                 .replace(R.id.v4a_container, PlaceholderFragment.newInstance(position))
                 .commit();
         mTitle = mTitles.get(position).get("TITLE");
-        getActionBar().setTitle(mTitle);
+        mActionBar.setTitle(mTitle);
     }
 
     /**

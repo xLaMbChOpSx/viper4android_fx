@@ -29,7 +29,7 @@ import com.stericson.RootTools.execution.CommandCapture;
 public class BuildProp {
 
     private final boolean ENABLE_DEBUG = false;
-    private ArrayList<String> mBuildPropContent = new ArrayList<String>();
+    private final ArrayList<String> mBuildPropContent = new ArrayList<String>();
 
     public BuildProp() {
     }
@@ -66,8 +66,8 @@ public class BuildProp {
         if (ENABLE_DEBUG) {
             Log.i("ViPER4Android",
                     "Dumping the content of build.prop, size = " + mBuildPropContent.size());
-            for (int i = 0; i < mBuildPropContent.size(); i++) {
-                Log.i("ViPER4Android", "[build.prop] " + mBuildPropContent.get(i));
+            for (String aMBuildPropContent : mBuildPropContent) {
+                Log.i("ViPER4Android", "[build.prop] " + aMBuildPropContent);
             }
         }
     }
@@ -76,8 +76,8 @@ public class BuildProp {
      * Check whether build.prop contains a property
      */
     public boolean propExists(String key) {
-        for (int i = 0; i < mBuildPropContent.size(); i++) {
-            String currLine = mBuildPropContent.get(i).trim();
+        for (String aMBuildPropContent : mBuildPropContent) {
+            String currLine = aMBuildPropContent.trim();
             if ((currLine == null) || currLine.equals(""))
                 continue;
             if (currLine.startsWith("#"))
@@ -100,8 +100,8 @@ public class BuildProp {
      * Get a property value
      */
     public String getProp(String key) {
-        for (int i = 0; i < mBuildPropContent.size(); i++) {
-            String currLine = mBuildPropContent.get(i).trim();
+        for (String aMBuildPropContent : mBuildPropContent) {
+            String currLine = aMBuildPropContent.trim();
             if ((currLine == null) || currLine.equals(""))
                 continue;
             if (currLine.startsWith("#"))
@@ -182,8 +182,7 @@ public class BuildProp {
             fosOutput = new FileOutputStream(tempBuildpropFile);
             oswOutput = new OutputStreamWriter(fosOutput, "ASCII");
             bufferOutput = new BufferedWriter(oswOutput);
-            for (int i = 0; i < mBuildPropContent.size(); i++) {
-                String currLine = mBuildPropContent.get(i);
+            for (String currLine : mBuildPropContent) {
                 if ((currLine == null) || currLine.equals("")) {
                     bufferOutput.write("\n");
                     continue;

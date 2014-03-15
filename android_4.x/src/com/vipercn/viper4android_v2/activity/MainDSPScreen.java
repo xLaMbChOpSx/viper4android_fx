@@ -84,7 +84,10 @@ public final class MainDSPScreen extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String config = getArguments().getString("config");
+        String config = "";
+        if (getArguments() != null) {
+            config = getArguments().getString("config");
+        }
         PreferenceManager prefManager = getPreferenceManager();
 
         SharedPreferences prefSettings = getActivity().getSharedPreferences(
@@ -94,18 +97,20 @@ public final class MainDSPScreen extends PreferenceFragment {
             mControlLevel = 0;
         }
 
-        prefManager.setSharedPreferencesName(
-                ViPER4Android.SHARED_PREFERENCES_BASENAME + "." + config);
-        prefManager.setSharedPreferencesMode(Context.MODE_MULTI_PROCESS);
-        try {
-            int xmlId = R.xml.class.getField(config + "_preferences_l" + mControlLevel)
-                    .getInt(null);
-            addPreferencesFromResource(xmlId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        if (prefManager != null) {
+            prefManager.setSharedPreferencesName(
+                    ViPER4Android.SHARED_PREFERENCES_BASENAME + "." + config);
+            prefManager.setSharedPreferencesMode(Context.MODE_MULTI_PROCESS);
+            try {
+                int xmlId = R.xml.class.getField(config + "_preferences_l" + mControlLevel)
+                        .getInt(null);
+                addPreferencesFromResource(xmlId);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
-        prefManager.getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+            prefManager.getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ public class EqualizerSurface extends SurfaceView {
     private int mHeight;
 
     private float[] mLevels = new float[10];
+
     private final Paint mWhite, mGridLines, mControlBarText, mControlBar, mControlBarKnob;
     private final Paint mFrequencyResponseBg;
     private final Paint mFrequencyResponseHighlight, mFrequencyResponseHighlight2;
@@ -37,29 +38,29 @@ public class EqualizerSurface extends SurfaceView {
         setWillNotDraw(false);
 
         mWhite = new Paint();
-        mWhite.setColor(getResources().getColor(R.color.white));
+        mWhite.setColor(context.getResources().getColor(R.color.white));
         mWhite.setStyle(Style.STROKE);
         mWhite.setTextSize(13);
         mWhite.setAntiAlias(true);
 
         mGridLines = new Paint();
-        mGridLines.setColor(getResources().getColor(R.color.grid_lines));
+        mGridLines.setColor(context.getResources().getColor(R.color.grid_lines));
         mGridLines.setStyle(Style.STROKE);
 
         mControlBarText = new Paint(mWhite);
         mControlBarText.setTextAlign(Paint.Align.CENTER);
-        mControlBarText.setShadowLayer(2, 0, 0, getResources().getColor(R.color.cb));
+        mControlBarText.setShadowLayer(2, 0, 0, context.getResources().getColor(R.color.cb));
 
         mControlBar = new Paint();
         mControlBar.setStyle(Style.STROKE);
-        mControlBar.setColor(getResources().getColor(R.color.cb));
+        mControlBar.setColor(context.getResources().getColor(R.color.cb));
         mControlBar.setAntiAlias(true);
         mControlBar.setStrokeCap(Cap.ROUND);
-        mControlBar.setShadowLayer(2, 0, 0, getResources().getColor(R.color.black));
+        mControlBar.setShadowLayer(2, 0, 0, context.getResources().getColor(R.color.black));
 
         mControlBarKnob = new Paint();
         mControlBarKnob.setStyle(Style.FILL);
-        mControlBarKnob.setColor(getResources().getColor(R.color.white));
+        mControlBarKnob.setColor(context.getResources().getColor(R.color.white));
         mControlBarKnob.setAntiAlias(true);
 
         mFrequencyResponseBg = new Paint();
@@ -69,13 +70,13 @@ public class EqualizerSurface extends SurfaceView {
         mFrequencyResponseHighlight = new Paint();
         mFrequencyResponseHighlight.setStyle(Style.STROKE);
         mFrequencyResponseHighlight.setStrokeWidth(6);
-        mFrequencyResponseHighlight.setColor(getResources().getColor(R.color.freq_hl));
+        mFrequencyResponseHighlight.setColor(context.getResources().getColor(R.color.freq_hl));
         mFrequencyResponseHighlight.setAntiAlias(true);
 
         mFrequencyResponseHighlight2 = new Paint();
         mFrequencyResponseHighlight2.setStyle(Style.STROKE);
         mFrequencyResponseHighlight2.setStrokeWidth(3);
-        mFrequencyResponseHighlight2.setColor(getResources().getColor(R.color.freq_hl2));
+        mFrequencyResponseHighlight2.setColor(context.getResources().getColor(R.color.freq_hl2));
         mFrequencyResponseHighlight2.setAntiAlias(true);
     }
 
@@ -109,41 +110,43 @@ public class EqualizerSurface extends SurfaceView {
         mWidth = right - left;
         mHeight = bottom - top;
 
-        float barWidth = res.getDimension(R.dimen.bar_width);
-        mControlBar.setStrokeWidth(barWidth);
-        mControlBarKnob.setShadowLayer(barWidth * 0.5f, 0, 0, res.getColor(R.color.off_white));
+        if (res != null) {
+            float barWidth = res.getDimension(R.dimen.bar_width);
+            mControlBar.setStrokeWidth(barWidth);
+            mControlBarKnob.setShadowLayer(barWidth * 0.5f, 0, 0, res.getColor(R.color.off_white));
 
-        /**
-         * red > +7
-         * yellow > +3
-         * holo_blue_bright > 0
-         * holo_blue < 0
-         * holo_blue_dark < 3
-         */
-        int[] responseColors = {
-            res.getColor(R.color.eq_red),
-            res.getColor(R.color.eq_yellow),
-            res.getColor(R.color.eq_holo_bright),
-            res.getColor(R.color.eq_holo_blue),
-            res.getColor(R.color.eq_holo_dark)
-        };
-        float[] responsePositions = {
-            0, 0.2f, 0.45f, 0.6f, 1f
-        };
+            /**
+             * red > +7
+             * yellow > +3
+             * holo_blue_bright > 0
+             * holo_blue < 0
+             * holo_blue_dark < 3
+             */
+            int[] responseColors = {
+                res.getColor(R.color.eq_red),
+                res.getColor(R.color.eq_yellow),
+                res.getColor(R.color.eq_holo_bright),
+                res.getColor(R.color.eq_holo_blue),
+                res.getColor(R.color.eq_holo_dark)
+            };
+            float[] responsePositions = {
+                0, 0.2f, 0.45f, 0.6f, 1f
+            };
 
-        mFrequencyResponseBg.setShader(new LinearGradient(0, 0, 0, mHeight,
-                responseColors, responsePositions, Shader.TileMode.CLAMP));
+            mFrequencyResponseBg.setShader(new LinearGradient(0, 0, 0, mHeight,
+                    responseColors, responsePositions, Shader.TileMode.CLAMP));
 
-        int[] barColors = {
-            res.getColor(R.color.cb_shader),
-            res.getColor(R.color.cb_shader_alpha)
-        };
-        float[] barPositions = {
-            0, 1
-        };
+            int[] barColors = {
+                res.getColor(R.color.cb_shader),
+                res.getColor(R.color.cb_shader_alpha)
+            };
+            float[] barPositions = {
+                0, 1
+            };
 
-        mControlBar.setShader(new LinearGradient(0, 0, 0, mHeight,
-                barColors, barPositions, Shader.TileMode.CLAMP));
+            mControlBar.setShader(new LinearGradient(0, 0, 0, mHeight,
+                    barColors, barPositions, Shader.TileMode.CLAMP));
+        }
     }
 
     public void setBand(int i, float value) {

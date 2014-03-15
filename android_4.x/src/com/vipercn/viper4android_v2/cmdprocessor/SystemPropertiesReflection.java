@@ -53,20 +53,23 @@ public class SystemPropertiesReflection {
         try {
 
             ClassLoader cl = context.getClassLoader();
-            Class<?> SystemProperties = cl.loadClass("android.os.SystemProperties");
+            Class<?> SystemProperties;
+            if (cl != null) {
+                SystemProperties = cl.loadClass("android.os.SystemProperties");
 
-            // Parameters Types
-            @SuppressWarnings("rawtypes")
-            Class[] paramTypes = new Class[1];
-            paramTypes[0] = String.class;
+                // Parameters Types
+                @SuppressWarnings("rawtypes")
+                Class[] paramTypes = new Class[1];
+                paramTypes[0] = String.class;
 
-            Method get = SystemProperties.getMethod("get", paramTypes);
+                Method get = SystemProperties.getMethod("get", paramTypes);
 
-            // Parameters
-            Object[] params = new Object[1];
-            params[0] = new String(key);
+                // Parameters
+                Object[] params = new Object[1];
+                params[0] = new String(key);
 
-            ret = (String) get.invoke(SystemProperties, params);
+                ret = (String) get.invoke(SystemProperties, params);
+            }
 
         } catch (IllegalArgumentException iAE) {
             throw iAE;
@@ -94,23 +97,26 @@ public class SystemPropertiesReflection {
         try {
 
             ClassLoader cl = context.getClassLoader();
-            Class<?> SystemProperties = cl.loadClass("android.os.SystemProperties");
+            Class<?> SystemProperties;
 
-            // Parameters Types
-            @SuppressWarnings("rawtypes")
-            Class[] paramTypes = new Class[2];
-            paramTypes[0] = String.class;
-            paramTypes[1] = String.class;
+            if (cl != null) {
+                SystemProperties = cl.loadClass("android.os.SystemProperties");
 
-            Method get = SystemProperties.getMethod("get", paramTypes);
+                // Parameters Types
+                @SuppressWarnings("rawtypes")
+                Class[] paramTypes = new Class[2];
+                paramTypes[0] = String.class;
+                paramTypes[1] = String.class;
 
-            // Parameters
-            Object[] params = new Object[2];
-            params[0] = new String(key);
-            params[1] = new String(def);
+                Method get = SystemProperties.getMethod("get", paramTypes);
 
-            ret = (String) get.invoke(SystemProperties, params);
+                // Parameters
+                Object[] params = new Object[2];
+                params[0] = new String(key);
+                params[1] = new String(def);
 
+                ret = (String) get.invoke(SystemProperties, params);
+            }
         } catch (IllegalArgumentException iAE) {
             throw iAE;
         } catch (Exception e) {

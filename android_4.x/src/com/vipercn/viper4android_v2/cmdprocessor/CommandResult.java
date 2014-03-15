@@ -148,8 +148,9 @@ public class CommandResult implements Parcelable {
 
         return (mStartTime == that.mStartTime &&
                 mExitValue == that.mExitValue &&
-                mStdout == that.mStdout &&
-                mStderr == that.mStderr && mEndTime == that.mEndTime);
+                mStdout.equals(that.mStdout) &&
+                mStderr.equals(that.mStderr) &&
+                mEndTime == that.mEndTime);
     }
 
     @Override
