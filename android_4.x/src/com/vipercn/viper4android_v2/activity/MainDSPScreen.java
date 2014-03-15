@@ -1,3 +1,4 @@
+
 package com.vipercn.viper4android_v2.activity;
 
 import android.app.AlertDialog;
@@ -21,8 +22,7 @@ public final class MainDSPScreen extends PreferenceFragment {
     public static final String EQ_VALUE_CUSTOM = "custom";
     public static final String PREF_KEY_FORCE = "viper4android.global.forceenable.enable";
 
-    private final OnSharedPreferenceChangeListener listener
-            = new OnSharedPreferenceChangeListener() {
+    private final OnSharedPreferenceChangeListener listener = new OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             Log.i("ViPER4Android", "Update key = " + key);
@@ -32,14 +32,20 @@ public final class MainDSPScreen extends PreferenceFragment {
                 if (!EQ_VALUE_CUSTOM.equals(newValue)) {
                     prefs.edit().putString(PREF_KEY_CUSTOM_EQ, newValue).commit();
 
-                    /* Now tell the equalizer that it must display something else. */
+                    /*
+                     * Now tell the equalizer that it must display something
+                     * else.
+                     */
                     EqualizerPreference eq =
                             (EqualizerPreference) findPreference(PREF_KEY_CUSTOM_EQ);
                     eq.refreshFromPreference();
                 }
             }
 
-            /* If the equalizer surface is updated, select matching pref entry or "custom". */
+            /*
+             * If the equalizer surface is updated, select matching pref entry
+             * or "custom".
+             */
             if (PREF_KEY_CUSTOM_EQ.equals(key)) {
                 String newValue = prefs.getString(key, null);
                 String desiredValue = EQ_VALUE_CUSTOM;
@@ -105,6 +111,7 @@ public final class MainDSPScreen extends PreferenceFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(
+                listener);
     }
 }

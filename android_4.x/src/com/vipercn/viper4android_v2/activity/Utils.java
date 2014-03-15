@@ -1,22 +1,5 @@
+
 package com.vipercn.viper4android_v2.activity;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.media.audiofx.AudioEffect;
-import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
-
-import com.vipercn.viper4android_v2.R;
-import com.vipercn.viper4android_v2.service.ViPER4AndroidService;
-
-import com.stericson.RootTools.RootTools;
-import com.stericson.RootTools.execution.CommandCapture;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,6 +17,23 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.StringTokenizer;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.media.audiofx.AudioEffect;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+
+import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.execution.CommandCapture;
+import com.vipercn.viper4android_v2.R;
+import com.vipercn.viper4android_v2.service.ViPER4AndroidService;
 
 public class Utils {
 
@@ -71,7 +71,8 @@ public class Utils {
             AudioEffect.Descriptor mViper4AndroidEngine = null;
             Log.i("ViPER4Android", "Found " + mAudioEffectList.length + " effects");
             for (int i = 0; i < mAudioEffectList.length; i++) {
-                if (mAudioEffectList[i] == null) continue;
+                if (mAudioEffectList[i] == null)
+                    continue;
                 try {
                     AudioEffect.Descriptor aeEffect = mAudioEffectList[i];
                     Log.i("ViPER4Android", "[" + (i + 1) + "], " + aeEffect.name + ", "
@@ -105,7 +106,8 @@ public class Utils {
                         // v4aVersionLine should be "ViPER4Android [A.B.C.D]"
                         v4aVersionLine = v4aVersionLine.substring(15);
                         while (v4aVersionLine.endsWith("]"))
-                            v4aVersionLine = v4aVersionLine.substring(0, v4aVersionLine.length() - 1);
+                            v4aVersionLine = v4aVersionLine.substring(0,
+                                    v4aVersionLine.length() - 1);
                         // v4aVersionLine should be "A.B.C.D"
                         String[] mVerBlocks = v4aVersionLine.split("\\.");
                         if (mVerBlocks.length == 4) {
@@ -244,26 +246,26 @@ public class Utils {
             mBusyBox.setMessage(ctxInstance.getResources().getString(R.string.text_no_busybox));
             mBusyBox.setPositiveButton(ctxInstance.getResources().getString(R.string.text_ok),
                     new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        ctxInstance.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-                                .parse("market://details?id=stericson.busybox")));
-                    } catch (android.content.ActivityNotFoundException anfe) {
-                        ctxInstance.startActivity(new Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(
-                                        "http://play.google.com/store/apps/details?id=stericson.busybox")));
-                    }
-                }
-            });
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                ctxInstance.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+                                        .parse("market://details?id=stericson.busybox")));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                ctxInstance.startActivity(new Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(
+                                                "http://play.google.com/store/apps/details?id=stericson.busybox")));
+                            }
+                        }
+                    });
             mBusyBox.setNegativeButton(ctxInstance.getResources().getString(R.string.text_cancel),
                     new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
             mBusyBox.show();
         }
 
@@ -272,8 +274,8 @@ public class Utils {
 
     // Check for build.prop entries which can cause issues and offer update
     /*
-     * The return value of this method is useless
-     * Because this method will return before warning dialog dismiss
+     * The return value of this method is useless Because this method will
+     * return before warning dialog dismiss
      */
     public static void proceedBuildProp(Context ctx) {
         final String LPA_DECODE = "lpa.decode";
@@ -286,21 +288,24 @@ public class Utils {
 
         if (mBuildPropUtil.propExists(LPA_DECODE)) {
             if (mBuildPropUtil.getProp(LPA_DECODE).equalsIgnoreCase("true")) {
-            	Log.i("ViPER4Android", "[LPA] lpa.decode = true");
+                Log.i("ViPER4Android", "[LPA] lpa.decode = true");
                 mBuildProp.add(LPA_DECODE);
-            } else Log.i("ViPER4Android", "[LPA] lpa.decode = false");
+            } else
+                Log.i("ViPER4Android", "[LPA] lpa.decode = false");
         }
         if (mBuildPropUtil.propExists(LPA_USE_STAGEFRIGHT)) {
             if (mBuildPropUtil.getProp(LPA_USE_STAGEFRIGHT).equalsIgnoreCase("true")) {
-            	Log.i("ViPER4Android", "[LPA] lpa.use.stagefright = true");
+                Log.i("ViPER4Android", "[LPA] lpa.use.stagefright = true");
                 mBuildProp.add(LPA_USE_STAGEFRIGHT);
-            } else Log.i("ViPER4Android", "[LPA] lpa.use.stagefright = false");
+            } else
+                Log.i("ViPER4Android", "[LPA] lpa.use.stagefright = false");
         }
         if (mBuildPropUtil.propExists(TUNNEL_DECODE)) {
             if (mBuildPropUtil.getProp(TUNNEL_DECODE).equalsIgnoreCase("true")) {
-            	Log.i("ViPER4Android", "[LPA] tunnel.decode = true");
+                Log.i("ViPER4Android", "[LPA] tunnel.decode = true");
                 mBuildProp.add(TUNNEL_DECODE);
-            } else Log.i("ViPER4Android", "[LPA] tunnel.decode = false");
+            } else
+                Log.i("ViPER4Android", "[LPA] tunnel.decode = false");
         }
 
         if (!mBuildProp.isEmpty()) {
@@ -309,32 +314,34 @@ public class Utils {
             mModifyWarn.setMessage(ctx.getResources().getString(R.string.text_modifybuildprop));
             mModifyWarn.setPositiveButton(ctx.getResources().getString(R.string.text_ok),
                     new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                	for (String buildProp : mBuildProp) {
-                		mBuildPropUtil.setProp(buildProp, "false");
-                	}
-                	mBuildPropUtil.commitBuildprop(StaticEnvironment.getExternalStoragePath());
-                	mBuildPropUtil.initializeBuildprop();
-                }
-            });
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            for (String buildProp : mBuildProp) {
+                                mBuildPropUtil.setProp(buildProp, "false");
+                            }
+                            mBuildPropUtil.commitBuildprop(StaticEnvironment
+                                    .getExternalStoragePath());
+                            mBuildPropUtil.initializeBuildprop();
+                        }
+                    });
             mModifyWarn.setNegativeButton(ctx.getResources().getString(R.string.text_cancel),
                     new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                	Log.i("ViPER4Android", "[LPA] User canceled");
-                    dialog.dismiss();
-                }
-            });
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.i("ViPER4Android", "[LPA] User canceled");
+                            dialog.dismiss();
+                        }
+                    });
             mModifyWarn.show();
         } else {
-        	Log.i("ViPER4Android", "LPA feature not enabled");
+            Log.i("ViPER4Android", "LPA feature not enabled");
         }
     }
 
     // Get a file length
     private static long getFileLength(String mFileName) {
-        if (!(new File(mFileName).isFile())) return 0;
+        if (!(new File(mFileName).isFile()))
+            return 0;
         return new File(mFileName).length();
     }
 
@@ -345,8 +352,10 @@ public class Utils {
             URLConnection connection = url.openConnection();
             connection.connect();
             InputStream stream = connection.getInputStream();
-            if (connection.getContentLength() <= 0) return false;
-            if (stream == null) return false;
+            if (connection.getContentLength() <= 0)
+                return false;
+            if (stream == null)
+                return false;
             FileOutputStream fos = new FileOutputStream(mStorePath + mFileName);
 
             byte[] buf = new byte[1024];
@@ -390,8 +399,10 @@ public class Utils {
     public static void getFileNameList(File path, String fileExt, ArrayList<String> fileList) {
         if (path.isDirectory()) {
             File[] files = path.listFiles();
-            if (null == files) return;
-            for (File file : files) getFileNameList(file, fileExt, fileList);
+            if (null == files)
+                return;
+            for (File file : files)
+                getFileNameList(file, fileExt, fileList);
         } else {
             String filePath = path.getAbsolutePath();
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
@@ -409,11 +420,14 @@ public class Utils {
             String mProfileName = "";
             while (true) {
                 String mLine = bufferInput.readLine();
-                if (mLine == null) break;
-                if (mLine.startsWith("#")) continue;
+                if (mLine == null)
+                    break;
+                if (mLine.startsWith("#"))
+                    continue;
 
                 String[] mChunks = mLine.split("=");
-                if (mChunks.length != 2) continue;
+                if (mChunks.length != 2)
+                    continue;
                 if (mChunks[0].trim().equalsIgnoreCase("profile_name")) {
                     mProfileName = mChunks[1];
                     break;
@@ -465,7 +479,8 @@ public class Utils {
                     break;
                 }
             }
-            if (mProfileFileName.equals("")) return false;
+            if (mProfileFileName.equals(""))
+                return false;
 
             SharedPreferences preferences = ctx.getSharedPreferences(mPreferenceName,
                     Context.MODE_PRIVATE);
@@ -476,11 +491,14 @@ public class Utils {
                 Editor e = preferences.edit();
                 while (true) {
                     String mLine = bufferInput.readLine();
-                    if (mLine == null) break;
-                    if (mLine.startsWith("#")) continue;
+                    if (mLine == null)
+                        break;
+                    if (mLine.startsWith("#"))
+                        continue;
 
                     String[] mChunks = mLine.split("=");
-                    if (mChunks.length != 3) continue;
+                    if (mChunks.length != 3)
+                        continue;
                     if (mChunks[1].trim().equalsIgnoreCase("boolean")) {
                         String mParameter = mChunks[0];
                         boolean mValue = Boolean.valueOf(mChunks[2]);
@@ -526,8 +544,10 @@ public class Utils {
             bufferInput.mark((int) inputFileLength);
             do {
                 String mLine = bufferInput.readLine();
-                if (mLine == null) break;
-                if (mLine.trim().startsWith("#")) continue;
+                if (mLine == null)
+                    break;
+                if (mLine.trim().startsWith("#"))
+                    continue;
                 /* This is v4a effect uuid */
                 if (mLine.toLowerCase(Locale.US)
                         .contains("41d3c987-e6cf-11e3-a88a-11aba5d5c51b")) {
@@ -606,7 +626,8 @@ public class Utils {
         Context mContext = ctx.getApplicationContext();
         String mBasePath = "";
         if (mContext != null) {
-            // No try catch the mContext != null will prevent a possible NPE here
+            // No try catch the mContext != null will prevent a possible NPE
+            // here
             if (mContext.getFilesDir().exists()) {
                 mBasePath = mContext.getFilesDir().getAbsolutePath();
             } else if (!mContext.getFilesDir().mkdirs()) {
@@ -618,16 +639,19 @@ public class Utils {
         return mBasePath;
     }
 
-    // Check if addon.d folder exists for script installation (Device kernel dependant)
+    // Check if addon.d folder exists for script installation (Device kernel
+    // dependant)
     private static boolean addondExists() {
         File file = new File("/system/addon.d/");
         return file.exists() && file.isDirectory();
     }
 
     // Copy assets to local
-    private static boolean copyAssetsToLocal(Context ctx, String mSourceName, String mDestinationName) {
+    private static boolean copyAssetsToLocal(Context ctx, String mSourceName,
+            String mDestinationName) {
         String mBasePath = getBasePath(ctx);
-        if (mBasePath.equals("")) return false;
+        if (mBasePath.equals(""))
+            return false;
         mDestinationName = mBasePath + "/" + mDestinationName;
 
         InputStream myInput;
@@ -635,7 +659,8 @@ public class Utils {
         String outFileName = mDestinationName;
         try {
             File hfOutput = new File(mDestinationName);
-            if (hfOutput.exists()) hfOutput.delete();
+            if (hfOutput.exists())
+                hfOutput.delete();
             myOutput = new FileOutputStream(outFileName);
             myInput = ctx.getAssets().open(mSourceName);
             byte[] buffer = new byte[4096]; /* 4K page size */
@@ -683,16 +708,10 @@ public class Utils {
         }
     }
 
-
     /*
-     * Driver installation return value:
-     * 0: Success
-     * 1: Acquire root failed
-     * 2: External storage not mounted
-     * 3: I/O error
-     * 4: Unsupported audio_config.conf file format
-     * 5: Busybox not found
-     * 6: Unknow error
+     * Driver installation return value: 0: Success 1: Acquire root failed 2:
+     * External storage not mounted 3: I/O error 4: Unsupported
+     * audio_config.conf file format 5: Busybox not found 6: Unknow error
      */
 
     // Install ViPER4Android FX driver through roottools
@@ -714,7 +733,8 @@ public class Utils {
         }
 
         // Lets acquire root first :)
-        if (!RootTools.isAccessGiven()) return 1;
+        if (!RootTools.isAccessGiven())
+            return 1;
 
         // Check chmod utils
         String mChmod;
@@ -727,7 +747,7 @@ public class Utils {
                 mChmod = "toolbox chmod";
             else
                 return 5;
-            }
+        }
 
         // Generate temp config file path, thanks to 'ste71m'
         String mSystemConf = StaticEnvironment.getExternalStoragePath() + "v4a_audio_system.conf";
@@ -891,9 +911,9 @@ public class Utils {
         } catch (Exception e) {
             Log.i("ViPER4Android", "Copy back to /system cleanup failed, msg = " + e.getMessage());
             if (!operationSuccess) {
-            	return 6;
+                return 6;
             } else {
-            	return 0;
+                return 0;
             }
         }
 
@@ -935,7 +955,8 @@ public class Utils {
                     .rootExecuteWithoutShell("cp /system/etc/audio_effects.conf " + mSystemConf);
             Log.i("ViPER4Android", "Command return = " + mShellCmdReturn);
             mShellCmdReturn = ShellCommand
-                    .rootExecuteWithoutShell("cp /system/vendor/etc/audio_effects.conf " + mVendorConf);
+                    .rootExecuteWithoutShell("cp /system/vendor/etc/audio_effects.conf "
+                            + mVendorConf);
             Log.i("ViPER4Android", "Command return = " + mShellCmdReturn);
         } else {
             /* Copy to external storage */
@@ -1194,34 +1215,34 @@ public class Utils {
         }
 
         if (RootTools.exists("/system/lib/soundfx/libv4a_fx_ics.so")) {
-        	return 0;
+            return 0;
         } else {
-        	return 6;
+            return 6;
         }
     }
 
     // Install ViPER4Android FX driver
     public static int installDrv_FX(Context ctx, String mDriverName) {
-    	// Try install driver using RootTools
-    	int method1Result = installDrv_FX_RootTools(ctx, mDriverName);
-    	switch (method1Result) {
-    	case 0:  // Success
-    	case 1:  // Acquire root failed
-    	case 2:  // External storage not mounted
-    	case 3:  // I/O error
-    	case 4:  // Unsupported audio_config.conf file format
-    		return method1Result;  // Report result to user
-    	case 5:  // Busybox not found
-    	case 6:  // Unknow error
-    		return installDrv_FX_WithoutShell(ctx, mDriverName);
-    	}
+        // Try install driver using RootTools
+        int method1Result = installDrv_FX_RootTools(ctx, mDriverName);
+        switch (method1Result) {
+            case 0: // Success
+            case 1: // Acquire root failed
+            case 2: // External storage not mounted
+            case 3: // I/O error
+            case 4: // Unsupported audio_config.conf file format
+                return method1Result; // Report result to user
+            case 5: // Busybox not found
+            case 6: // Unknow error
+                return installDrv_FX_WithoutShell(ctx, mDriverName);
+        }
 
-    	return 6;
+        return 6;
     }
 
     /**
      * Restart the activity smoothly
-     *
+     * 
      * @param activity
      */
     public static void restartActivity(final Activity activity) {
